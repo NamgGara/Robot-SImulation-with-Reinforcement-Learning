@@ -2,7 +2,6 @@ import pybullet as p
 import pybullet_data
 import random
 from time import sleep
-import model
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -24,7 +23,7 @@ if __name__== "__main__":
         articulation = [random.random()*100 for i in joint_array]
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
 
-        joint_states = p.getJointState(robot, joint_array)
+        joint_states = p.getJointStates(robot, joint_array)
         
         sleep(1./240.)
 
