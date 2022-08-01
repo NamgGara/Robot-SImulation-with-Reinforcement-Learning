@@ -20,4 +20,4 @@ class NN:
 
 rl_model = RL()
 
-from simulation import joint_states
+import simulation
