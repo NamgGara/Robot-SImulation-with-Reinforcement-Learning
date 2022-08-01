@@ -1,3 +1,4 @@
+from unicodedata import name
 import pybullet as p
 import pybullet_data
 import random
@@ -14,17 +15,16 @@ spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 robot = p.loadURDF("humanoid.urdf", spawn_point, spawn_pitch)
 joint_array = range(p.getNumJoints(robot))
 
+if __name__ == "__main__":
+    for i in range(10000):
+        p.stepSimulation()
 
-for i in range(10000):
-    p.stepSimulation()
+        #motor control test
 
-    #motor control test
+        articulation = [1 for i in joint_array]
+        p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
 
-    articulation = [1 for i in joint_array]
-    p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
+        joint_states = p.getJointStates(robot, joint_array)
+        sleep(1./240.)
 
-    joint_states = p.getJointStates(robot, joint_array)
-    
-    sleep(1./240.)
-
-p.disconnect()
+    p.disconnect()
