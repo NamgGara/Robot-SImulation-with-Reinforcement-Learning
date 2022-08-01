@@ -18,11 +18,13 @@ joint_array = range(p.getNumJoints(robot))
 if __name__== "__main__":
     for i in range(10000):
         p.stepSimulation()
-        #motor control test
-        articulation = [random.random()*100 for i in joint_array]
-        p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation,[1.0 for i in joint_array])
 
-        print(p.getJointStates(robot))
+        #motor control test
+
+        articulation = [random.random()*100 for i in joint_array]
+        p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
+
+        joint_states = p.getJointState(robot, joint_array)
         
         sleep(1./240.)
 
