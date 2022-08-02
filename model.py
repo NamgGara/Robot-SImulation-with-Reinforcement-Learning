@@ -6,31 +6,8 @@ import torch.optim
 import torch.utils.data
 from simulation import robot, joint_array
 
-""" 
-the model should be actor critic
-
-to do:
-what distribution to use for policy and how to select actions
-recieves states of all joints and produces position for each joint
-
-critic should be DQN
-the network should produce value function of states
-"""
-
 joint_states= getJointStates(robot, joint_array)
 feature_length = len(joint_array)
-
-
-
-class ActorC:
-    def __init__(self):
-        pass
-
-    def forward(self,joint_list):
-
-        #logic
-
-        return 
 
 class DQN:
     def __init__(self):
@@ -42,6 +19,29 @@ class DQN:
         result = self.dense_1(states)
         result = self.dense_2(result)
         return self.final_dense(result)
+
+class ActorC:
+    def __init__(self):
+        pass
+
+    """ 
+the model should be actor critic
+
+to do:
+what distribution to use for policy and how to select actions
+recieves states of all joints and produces position for each joint
+
+critic should be DQN
+the network should produce value function of states
+    """
+
+    def forward(self,joint_list):
+
+        #logic
+
+        return 
+
+
 
 
 def reward_lock(progress,threshold):
