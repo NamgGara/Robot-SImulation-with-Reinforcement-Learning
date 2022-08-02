@@ -27,11 +27,14 @@ DQN_old = model.DQN(feature_length=feature_length)
 DQN_new = model.DQN(feature_length=feature_length)
 _save(DQN_new.state_dict(),"old_parameters")
 
+old_head_coord = p.getLinkState(robot,robot_head)[0]
+threshold_cord = p.getLinkState(robot,robot_head)[0][2]
 
 if __name__ == "__main__":
     for i in range(10000):
         p.stepSimulation()
 
+        
         articulation = [1 for i in joint_array]
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
         joint_states = p.getJointStates(robot, joint_array)
@@ -40,8 +43,13 @@ if __name__ == "__main__":
 
         with torch.no_grad():
             old_target = DQN_old(states_as_tensors)
-        print(p.getLinkState(robot,robot_head))
+
         #motor control test 
+
+        new_head_coord = p.getLinkState(robot,robot_head)[0][2]
+
+        reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
+
         sleep(1./240.)
 
         # i need loss function   reward + next state value fn - current state value fn
