@@ -47,5 +47,7 @@ class ActorC(nn.Module):
 def reward(progress,threshold):
     if progress > threshold:
         return 10, (new_threshold:=progress)
+    else:
+        return 0, threshold
 
 
