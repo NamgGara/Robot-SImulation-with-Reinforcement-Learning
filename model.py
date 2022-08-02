@@ -21,9 +21,6 @@ joint_states= getJointStates(robot, joint_array)
 feature_length = len(joint_array)
 
 
-def reward_lock(progress,threshold):
-    if progress > threshold:
-        return 1, (new_threshold:=progress)
 
 class ActorC:
     def __init__(self):
@@ -41,6 +38,16 @@ class DQN:
         self.dense_2 = nn.Linear(in_features=feature_length + 4, out_features=feature_length-6)
         self.final_dense = nn.Linear(in_features=feature_length-6, out_features=1)
         
+    def forward(self,states):
+        result = self.dense_1(states)
+        result = self.dense_2(result)
+        return self.final_dense(result)
+
+
+def reward_lock(progress,threshold):
+    if progress > threshold:
+        return 1, (new_threshold:=progress)
+
 rl_model = ActorC()
 
 for i in range(10):
