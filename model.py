@@ -5,11 +5,10 @@ import torchvision.transforms as transforms
 import torch.optim
 import torch.utils.data
 
-discount = 0.9
-t_reward = -1
-c_reward = 0
-
-# i need loss function   reward + next state value fn - current state value fn
+class Model_HyperParameters:
+    discount = 0.9
+    t_reward = -1
+    c_reward = 0
 
 class DQN(nn.Module):
     def __init__(self,feature_length):

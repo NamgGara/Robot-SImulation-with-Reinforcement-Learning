@@ -23,7 +23,7 @@ rl_model =model.ActorC()
 DQN_old = model.DQN()
 DQN_new = model.DQN()
 _save(DQN_old.state_dict(),"old_parameters")
-
+hyper_parameters = model.Model_HyperParameters()
 
 if __name__ == "__main__":
     for i in range(10000):
@@ -36,5 +36,8 @@ if __name__ == "__main__":
 
         joint_states = p.getJointStates(robot, joint_array)
         sleep(1./240.)
+
+        # i need loss function   reward + next state value fn - current state value fn
+
 
     p.disconnect()
