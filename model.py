@@ -62,11 +62,5 @@ torch.save(DQN_old.state_dict(),"old_parameters")
 
 for i in range(10):
 
-    # print(joint_states)
+    print(joint_states)
     # DQN_old = torch.loadst
-
-
-
-
-    
-
