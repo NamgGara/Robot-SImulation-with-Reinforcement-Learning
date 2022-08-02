@@ -4,7 +4,6 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 import torch.optim
 import torch.utils.data
-from simulation import robot, joint_array
 
 discount = 0.9
 t_reward = -1
@@ -12,11 +11,8 @@ c_reward = 0
 
 # i need loss function   reward + next state value fn - current state value fn
 
-joint_states= getJointStates(robot, joint_array)
-feature_length = len(joint_array)
-
 class DQN(nn.Module):
-    def __init__(self):
+    def __init__(self,feature_length):
         super().__init__()
         self.dense_1 = nn.Linear(in_features= feature_length, out_features= feature_length + 4)
         self.dense_2 = nn.Linear(in_features=feature_length + 4, out_features=feature_length-6)
@@ -46,7 +42,6 @@ class ActorC(nn.Module):
 
     def forward(self,joint_list):
 
-        #logic
 
         return 
 
@@ -54,13 +49,4 @@ def reward(progress,threshold):
     if progress > threshold:
         return 10, (new_threshold:=progress)
 
-rl_model = ActorC()
-DQN_old = DQN()
-DQN_new = DQN()
 
-torch.save(DQN_old.state_dict(),"old_parameters")
-
-for i in range(10):
-
-    print(joint_states)
-    # DQN_old = torch.loadst
