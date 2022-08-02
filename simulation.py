@@ -1,4 +1,3 @@
-from unicodedata import name
 import pybullet as p
 import pybullet_data
 import random
@@ -19,7 +18,7 @@ if __name__ == "__main__":
     for i in range(10000):
         p.stepSimulation()
 
-        #motor control test
+        #motor control test 
 
         articulation = [1 for i in joint_array]
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
