@@ -2,6 +2,8 @@ import pybullet as p
 import pybullet_data
 import random
 from time import sleep
+
+import torch
 import model
 from torch import save as _save
 
@@ -22,19 +24,23 @@ feature_length = len(joint_array)
 rl_model =model.ActorC()
 DQN_old = model.DQN()
 DQN_new = model.DQN()
-_save(DQN_old.state_dict(),"old_parameters")
+_save(DQN_new.state_dict(),"old_parameters")
 hyper_parameters = model.Model_HyperParameters()
 
 if __name__ == "__main__":
     for i in range(10000):
+
+        articulation = [1 for i in joint_array]
+        p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
+        joint_states = p.getJointStates(robot, joint_array)
+
+        with torch.no_grad:
+            old_target = DQN_old(joint_states[0])
         p.stepSimulation()
 
         #motor control test 
 
-        articulation = [1 for i in joint_array]
-        p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
 
-        joint_states = p.getJointStates(robot, joint_array)
         sleep(1./240.)
 
         # i need loss function   reward + next state value fn - current state value fn
