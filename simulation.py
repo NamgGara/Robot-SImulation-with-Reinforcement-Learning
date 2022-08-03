@@ -24,7 +24,7 @@ joint_array = range(p.getNumJoints(robot))
 feature_length = len(joint_array)
 
 # from model.py
-rl_model = model.ActorC()
+rl_model = model.ActorC(feature_length=feature_length)
 DQN_old = model.DQN(feature_length=feature_length)
 DQN_new = model.DQN(feature_length=feature_length)
 
@@ -65,8 +65,10 @@ if __name__ == "__main__":
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
         hyper_parameters.c_reward += reward + hyper_parameters.t_reward
 
-        delta = torch.tensor(reward) + (hyper_parameters.discount * old_target) - DQN_new(old_states_as_tensors)
+        delta = torch.nn.MSELoss()(torch.tensor(reward) + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
         delta.backward()
+        #ERROR 
+        print(DQN_new.dense_1.weight.grad)
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
 
