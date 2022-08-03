@@ -29,14 +29,11 @@ class ActorC(nn.Module):
         
 
     """ 
-    the model should be actor critic
+    for actor critic, make a policy 
+    take in states through a nn, produce a distribution (binomial) for each joint
+    it can be two arrays of size joint x 1, 
+    sample from binomial for action,
 
-    to do:
-    what distribution to use for policy and how to select actions
-    recieves states of all joints and produces position for each joint
-
-    critic should be DQN
-    the network should produce value function of states
     """
 
     def forward(self,joint_list):
