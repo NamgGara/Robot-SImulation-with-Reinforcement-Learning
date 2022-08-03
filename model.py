@@ -38,14 +38,8 @@ class ActorC(nn.Module):
         mean = self.final_mean(result)
         std = self.final_std(result)
 
-        return mean,std
-
-def action_selection(mean, std):
-    normal_distribution = [torch.distributions.binomial()]
-    """ 
-    produce a distribution (binomial) for each joint
-    sample from binomial for action,
-    """
+        action = torch.distributions.Normal(loc=mean, scale=std)
+        return action.sample()
 
 def reward(progress,threshold):
     if progress > threshold:
