@@ -13,7 +13,7 @@ spawn_point = [0,0,3]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
 learning_rate = 0.05
-save_path = "new_parameters"
+save_path = "new_parameters.pt"
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -68,6 +68,6 @@ if __name__ == "__main__":
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
 
-        sleep(1./200.)
+        sleep(1./150.)
 
     p.disconnect()
