@@ -1,10 +1,10 @@
+import os
 import pybullet as p
 import pybullet_data
 import random
 from time import sleep
 import torch
 import model
-from torch import save as _save
 
 hyper_parameters = model.Model_HyperParameters()
 robot_head = 2
@@ -13,6 +13,7 @@ spawn_point = [0,0,3]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
 learning_rate = 0.05
+save_path = "new_parameters"
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -26,7 +27,11 @@ feature_length = len(joint_array)
 rl_model = model.ActorC()
 DQN_old = model.DQN(feature_length=feature_length)
 DQN_new = model.DQN(feature_length=feature_length)
-_save(DQN_new.state_dict(),"old_parameters")
+
+if os.path.exists(save_path):
+    for i in [DQN_old, DQN_new]:
+        i.load_state_dict(torch.load(save_path))
+        i.train()
 
 joint_states = p.getJointStates(robot, joint_array)
 old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
@@ -39,6 +44,7 @@ if __name__ == "__main__":
 
         if i%100 == 0:
             DQN_old.load_state_dict(DQN_new.state_dict())
+            torch.save(DQN_new.state_dict(),save_path)
         
         optimizer.zero_grad()
         p.stepSimulation()
@@ -62,7 +68,6 @@ if __name__ == "__main__":
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
 
-        sleep(1./240.)
-
+        sleep(1./200.)
 
     p.disconnect()
