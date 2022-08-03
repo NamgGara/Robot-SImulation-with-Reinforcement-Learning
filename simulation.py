@@ -12,7 +12,7 @@ gravity = [0,0,-9.9]
 spawn_point = [0,0,3]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
-learning_rate = 0.05
+learning_rate_DQN = 0.05
 save_path = "new_parameters.pt"
 
 physics_client = p.connect(p.GUI)
@@ -38,7 +38,7 @@ old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
 old_head_coord = p.getLinkState(robot,robot_head)[0]
 threshold_cord = old_head_coord[2]
 
-optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate)
+optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
 if __name__ == "__main__":
     for i in range(10000):
         optimizer.zero_grad()
