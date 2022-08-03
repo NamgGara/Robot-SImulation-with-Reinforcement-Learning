@@ -12,7 +12,7 @@ gravity = [0,0,-9.9]
 spawn_point = [0,0,1]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
-learning_rate_DQN = 0.05
+learning_rate_DQN = 0.1
 save_path = "new_parameters.pt"
 str_points = 1
 
@@ -41,6 +41,7 @@ old_head_coord = p.getLinkState(robot,robot_head)[0]
 threshold_cord = old_head_coord[2]
 
 optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
+
 if __name__ == "__main__":
     for i in range(10000):
         optimizer.zero_grad()
@@ -60,14 +61,18 @@ if __name__ == "__main__":
         new_head_coord = p.getLinkState(robot,robot_head)[0][2]
 
         with torch.no_grad():
-            old_target = DQN_old(new_states_as_tensors)
+            old_target = DQN_old(new_states_as_tensors).item()
         
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
         hyper_parameters.c_reward += reward + hyper_parameters.t_reward
+        reward = torch.tensor(reward,requires_grad=True)
 
-        delta = torch.nn.MSELoss()(torch.tensor(reward) + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
+        delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
         delta.backward()
         optimizer.step()
+        # print debug
+        print(DQN_new.dense_1.weight.grad_fn)
+
         old_states_as_tensors = new_states_as_tensors
 
         sleep(1./150.)
