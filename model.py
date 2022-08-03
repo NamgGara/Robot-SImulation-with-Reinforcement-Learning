@@ -2,6 +2,7 @@ import torch
 from pybullet import getJointStates
 import torch.nn as nn
 import torchvision.transforms as transforms
+import torch.nn.functional as F
 import torch.optim
 import torch.utils.data
 
@@ -18,8 +19,9 @@ class DQN(nn.Module):
         self.final_dense = nn.Linear(in_features=feature_length-6, out_features=1)
         
     def forward(self,states):
-        result = nn.ReLU()(self.dense_1(states))
-        result = nn.ReLU()(self.dense_2(result))
+        result = F.relu(self.dense_1(states))
+        result = F.relu(self.dense_2(result))
+        # print(self.final_dense(result))
         return self.final_dense(result)
     
 
@@ -33,8 +35,8 @@ class ActorC(nn.Module):
 
     def forward(self,joint_list):
 
-        result = nn.Relu()(self.dense1(joint_list))
-        result = nn.ReLU()(self.dense2(result))
+        result = F.relu((self.dense1(joint_list)))
+        result = F.relu(self.dense2(result))
         mean = self.final_mean(result)
         std = self.final_std(result)
         action = torch.distributions.Normal(loc=mean, scale=std)
@@ -47,3 +49,4 @@ def reward(progress,threshold):
         return 0, threshold
 
 
+    

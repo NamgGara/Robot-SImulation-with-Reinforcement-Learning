@@ -42,7 +42,6 @@ optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
 if __name__ == "__main__":
     for i in range(10000):
         optimizer.zero_grad()
-
         if i%100 == 0:
             DQN_old.load_state_dict(DQN_new.state_dict())
             torch.save(DQN_new.state_dict(),save_path)
@@ -61,14 +60,13 @@ if __name__ == "__main__":
 
         with torch.no_grad():
             old_target = DQN_old(new_states_as_tensors)
-        
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
         hyper_parameters.c_reward += reward + hyper_parameters.t_reward
 
         delta = torch.nn.MSELoss()(torch.tensor(reward) + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
         delta.backward()
         #ERROR 
-        print(DQN_new.dense_1.weight.grad)
+        # print(DQN_new.dense_1.weight.grad)
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
 
