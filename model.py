@@ -18,8 +18,8 @@ class DQN(nn.Module):
         self.final_dense = nn.Linear(in_features=feature_length-6, out_features=1)
         
     def forward(self,states):
-        result = self.dense_1(states)
-        result = self.dense_2(result)
+        result = nn.ReLU()(self.dense_1(states))
+        result = nn.ReLU()(self.dense_2(result))
         return self.final_dense(result)
     
 
