@@ -41,17 +41,18 @@ threshold_cord = old_head_coord[2]
 optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate)
 if __name__ == "__main__":
     for i in range(10000):
+        optimizer.zero_grad()
 
         if i%100 == 0:
             DQN_old.load_state_dict(DQN_new.state_dict())
             torch.save(DQN_new.state_dict(),save_path)
+
+        articulation = [1 for i in joint_array]
         
-        optimizer.zero_grad()
         p.stepSimulation()
 
         #motor control test 
         
-        articulation = [1 for i in joint_array]
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
         
         joint_states = p.getJointStates(robot, joint_array)
@@ -62,9 +63,10 @@ if __name__ == "__main__":
             old_target = DQN_old(new_states_as_tensors)
         
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
+        hyper_parameters.c_reward += reward + hyper_parameters.t_reward
 
-        loss = torch.tensor(reward) + old_target - DQN_new(old_states_as_tensors)
-        loss.backward()
+        delta = torch.tensor(reward) + (hyper_parameters.discount * old_target) - DQN_new(old_states_as_tensors)
+        delta.backward()
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
 
