@@ -9,11 +9,12 @@ import model
 hyper_parameters = model.Model_HyperParameters()
 robot_head = 2
 gravity = [0,0,-9.9]
-spawn_point = [0,0,3]
+spawn_point = [0,0,1]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
 learning_rate_DQN = 0.05
 save_path = "new_parameters.pt"
+str_points = 1
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -22,6 +23,7 @@ plane = p.loadURDF("plane.urdf")
 robot = p.loadURDF(urdf_model, spawn_point, spawn_pitch)
 joint_array = range(p.getNumJoints(robot))
 feature_length = len(joint_array)
+strength = [str_points for i in joint_array]
 
 # from model.py
 ActorC = model.ActorC(feature_length=feature_length)
@@ -51,7 +53,7 @@ if __name__ == "__main__":
 
         #motor control 
         articulation = ActorC(old_states_as_tensors)        
-        p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
+        p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, strength)
         
         joint_states = p.getJointStates(robot, joint_array)
         new_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
