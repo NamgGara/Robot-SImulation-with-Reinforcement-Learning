@@ -24,22 +24,28 @@ class DQN(nn.Module):
     
 
 class ActorC(nn.Module):
-    def __init__(self):
+    def __init__(self, feature_length):
         super().__init__()
-        
-
-    """ 
-    for actor critic, make a policy 
-    take in states through a nn, produce a distribution (binomial) for each joint
-    it can be two arrays of size joint x 1, 
-    sample from binomial for action,
-
-    """
+        self.dense1 = nn.Linear(in_features=feature_length, out_features=40)
+        self.dense2 = nn.Linear(in_features=40, out_features=30)
+        self.final_mean = nn.Linear(in_features=30, out_features=feature_length)
+        self.final_std = nn.Linear(in_features=30, out_features=feature_length)
 
     def forward(self,joint_list):
 
+        result = nn.Relu()(self.dense1(joint_list))
+        result = nn.ReLU()(self.dense2(result))
+        mean = self.final_mean(result)
+        std = self.final_std(result)
 
-        return 
+        return mean,std
+
+def action_selection(mean, std):
+    normal_distribution = [torch.distributions.binomial()]
+    """ 
+    produce a distribution (binomial) for each joint
+    sample from binomial for action,
+    """
 
 def reward(progress,threshold):
     if progress > threshold:
