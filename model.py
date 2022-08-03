@@ -32,12 +32,13 @@ class ActorC(nn.Module):
 
     def forward(self,joint_list):
 
-        result = nn.Relu()(self.dense1(joint_list))
+        result = nn.ReLU()(self.dense1(joint_list))
         result = nn.ReLU()(self.dense2(result))
         mean = self.final_mean(result)
         std = self.final_std(result)
         action = torch.distributions.Normal(loc=mean, scale=std)
         return action.sample()
+
 
 def reward(progress,threshold):
     if progress > threshold:
