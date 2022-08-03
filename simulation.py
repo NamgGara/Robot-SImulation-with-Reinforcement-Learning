@@ -12,6 +12,7 @@ gravity = [0,0,-9.9]
 spawn_point = [0,0,3]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
+learning_rate = 0.05
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -27,32 +28,37 @@ DQN_old = model.DQN(feature_length=feature_length)
 DQN_new = model.DQN(feature_length=feature_length)
 _save(DQN_new.state_dict(),"old_parameters")
 
+joint_states = p.getJointStates(robot, joint_array)
+old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
 old_head_coord = p.getLinkState(robot,robot_head)[0]
-threshold_cord = p.getLinkState(robot,robot_head)[0][2]
+threshold_cord = old_head_coord[2]
 
+optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate)
 if __name__ == "__main__":
     for i in range(10000):
+        optimizer.zero_grad()
         p.stepSimulation()
 
+        #motor control test 
         
         articulation = [1 for i in joint_array]
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
+        
         joint_states = p.getJointStates(robot, joint_array)
-
-        states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
+        new_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
+        new_head_coord = p.getLinkState(robot,robot_head)[0][2]
 
         with torch.no_grad():
-            old_target = DQN_old(states_as_tensors)
-
-        #motor control test 
-
-        new_head_coord = p.getLinkState(robot,robot_head)[0][2]
+            old_target = DQN_old(new_states_as_tensors)
 
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
 
+        loss = torch.tensor(reward) + old_target - DQN_new(old_states_as_tensors)
+        loss.backward()
+        optimizer.step()
+        old_states_as_tensors = new_states_as_tensors
+        
         sleep(1./240.)
-
-        # i need loss function   reward + next state value fn - current state value fn
 
 
     p.disconnect()
