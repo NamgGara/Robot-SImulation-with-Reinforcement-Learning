@@ -70,7 +70,6 @@ if __name__ == "__main__":
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
 
-
         sleep(1./150.)
 
     p.disconnect()
