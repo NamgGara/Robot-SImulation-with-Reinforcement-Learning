@@ -36,6 +36,10 @@ threshold_cord = old_head_coord[2]
 optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate)
 if __name__ == "__main__":
     for i in range(10000):
+
+        if i%100 == 0:
+            DQN_old.load_state_dict(DQN_new.state_dict())
+        
         optimizer.zero_grad()
         p.stepSimulation()
 
@@ -50,14 +54,14 @@ if __name__ == "__main__":
 
         with torch.no_grad():
             old_target = DQN_old(new_states_as_tensors)
-
+        
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
 
         loss = torch.tensor(reward) + old_target - DQN_new(old_states_as_tensors)
         loss.backward()
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
-        
+
         sleep(1./240.)
 
 
