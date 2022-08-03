@@ -24,7 +24,7 @@ joint_array = range(p.getNumJoints(robot))
 feature_length = len(joint_array)
 
 # from model.py
-rl_model = model.ActorC(feature_length=feature_length)
+ActorC = model.ActorC(feature_length=feature_length)
 DQN_old = model.DQN(feature_length=feature_length)
 DQN_new = model.DQN(feature_length=feature_length)
 
@@ -47,12 +47,10 @@ if __name__ == "__main__":
             DQN_old.load_state_dict(DQN_new.state_dict())
             torch.save(DQN_new.state_dict(),save_path)
 
-        articulation = [1 for i in joint_array]
-        
         p.stepSimulation()
 
-        #motor control test 
-        
+        #motor control 
+        articulation = ActorC(old_states_as_tensors)        
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, [1.0 for i in joint_array])
         
         joint_states = p.getJointStates(robot, joint_array)
@@ -67,10 +65,9 @@ if __name__ == "__main__":
 
         delta = torch.nn.MSELoss()(torch.tensor(reward) + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
         delta.backward()
-        #ERROR 
-        print(DQN_new.dense_1.weight.grad)
         optimizer.step()
         old_states_as_tensors = new_states_as_tensors
+
 
         sleep(1./150.)
 
