@@ -35,9 +35,8 @@ class ActorC(nn.Module):
         result = nn.ReLU()(self.dense2(result))
         mean = self.final_mean(result)
         std = self.final_std(result)
-        action = 
-        action = [torch.distributions.Normal(x,torch.abs(y)) for x,y in zip(mean,std)]
-        return torch.tensor([act.sample() for act in action])
+        action = torch.distributions.Normal(mean,torch.abs(std))
+        return action.sample()
 
 def reward(progress,threshold):
     if progress > threshold:
