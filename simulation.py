@@ -15,6 +15,7 @@ urdf_model = "humanoid.urdf"
 learning_rate_DQN = 0.1
 save_path = "new_parameters.pt"
 str_points = 1
+simualtion_step = 1
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -27,14 +28,13 @@ strength = [str_points for i in joint_array]
 
 # from model.py
 ActorC = model.ActorC(feature_length=feature_length)
-DQN_old = model.DQN(feature_length=feature_length)
-DQN_old.requires_grad_(requires_grad=False)
+DQN_old = model.DQN(feature_length=feature_length).requires_grad_(requires_grad=False)
 DQN_new = model.DQN(feature_length=feature_length)
 
-if os.path.exists(save_path):
-    for i in [DQN_old, DQN_new]:
-        i.load_state_dict(torch.load(save_path))
-        i.train()
+# if os.path.exists(save_path):
+#     for i in [DQN_old, DQN_new]:
+#         i.load_state_dict(torch.load(save_path))
+#         i.train()
 
 joint_states = p.getJointStates(robot, joint_array)
 old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
@@ -44,7 +44,7 @@ threshold_cord = old_head_coord[2]
 optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
 
 if __name__ == "__main__":
-    for i in range(10000):
+    for i in range(simualtion_step):
         optimizer.zero_grad()
 
         if i%100 == 0:
@@ -68,14 +68,18 @@ if __name__ == "__main__":
         reward = torch.tensor(reward,requires_grad=False)
 
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
-        # print(delta.grad_fn)
-        print(DQN_new.final_dense.weight.requires_grad)
 
+        print("before step, the weights are =",DQN_new.final_dense.weight)
+
+        optimizer.zero_grad()
         delta.backward()
+        print("after backward, the grads",DQN_new.final_dense.weight.grad)
+
         optimizer.step()
-        # print debug
-        old_states_as_tensors = new_states_as_tensors
+        print("after step, the weights are = ",DQN_new.final_dense.weight)
 
         sleep(1./150.)
+        old_states_as_tensors = new_states_as_tensors
+
 
     p.disconnect()
