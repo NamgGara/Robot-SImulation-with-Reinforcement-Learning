@@ -14,8 +14,9 @@ spawn_point = [0,0,0]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
 learning_rate_DQN = 0.1
-learning_rate_AC = 0.1
+learning_rate_AC = 0.0001
 save_path = "new_parameters.pt"
+save_path2 = "new_actor.pt"
 str_points = 0.001
 simualtion_step = 10000
 
@@ -34,10 +35,12 @@ DQN_old = model.DQN(feature_length=feature_length).requires_grad_(requires_grad=
 DQN_new = model.DQN(feature_length=feature_length)
 critic = model.DQN(feature_length=feature_length)
 
-# if os.path.exists(save_path):
-#     for i in [DQN_old, DQN_new]:
-#         i.load_state_dict(torch.load(save_path))
-#         i.train()
+if os.path.exists(save_path):
+    for i in [DQN_old, DQN_new]:
+        i.load_state_dict(torch.load(save_path))
+        i.train()
+    ActorC.load_state_dict(torch.load(save_path2))
+    ActorC.train()
 
 joint_states = p.getJointStates(robot, joint_array)
 old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
@@ -53,7 +56,8 @@ if __name__ == "__main__":
 
         if i%100 == 0:
             DQN_old.load_state_dict(DQN_new.state_dict())
-            # torch.save(DQN_new.state_dict(),save_path)
+            torch.save(DQN_new.state_dict(),save_path)
+            torch.save(ActorC.state_dict(),save_path2)
 
         p.stepSimulation()
 
@@ -73,19 +77,19 @@ if __name__ == "__main__":
 
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), new_target)
         critic.load_state_dict(DQN_old.state_dict())
-        advantage = -1 * torch.nn.MSELoss()(reward,critic(articulation)) #* ActorC(old_states_as_tensors).log_prob(articulation)
+
+        advantage = -1 * torch.nn.MSELoss()(reward,critic(articulation)) * actor_critic_output.log_prob(articulation) # * ActorC(old_states_as_tensors).log_prob(torch.tensor(1))
 
         optimizer.zero_grad()
         delta.backward()
         optimizer.step()
-
+        
         actor_optimizer.zero_grad()
-        advantage.backward()
-
-        print(articulation.requires_grad)
+        advantage.backward(torch.ones_like(articulation))
         actor_optimizer.step()
 
         sleep(1./400.)
         old_states_as_tensors = new_states_as_tensors
 
     p.disconnect()
+  

@@ -24,15 +24,16 @@ class DQN(nn.Module):
 class ActorC(nn.Module):
     def __init__(self, feature_length):
         super().__init__()
-        self.dense_1 = nn.Linear(in_features=feature_length, out_features=40)
-        self.dense_2 = nn.Linear(in_features=40, out_features=30)
-        self.final_mean = nn.Linear(in_features=30, out_features=feature_length)
-        self.final_std = nn.Linear(in_features=30, out_features=feature_length)
+        self.dense_1 = nn.Linear(in_features=feature_length, out_features=20)
+        self.dense_2 = nn.Linear(in_features=20, out_features=18)
+        self.final_mean = nn.Linear(in_features=18, out_features=feature_length)
+        self.final_std = nn.Linear(in_features=18, out_features=feature_length)
 
     def forward(self,joint_list):
 
         result = nn.ReLU()(self.dense_1(joint_list))
         result = nn.ReLU()(self.dense_2(result))
+        # mean and std are beoming smaller and smaller, vanishing gradients?
         mean = self.final_mean(result)
         std = self.final_std(result)
         return torch.distributions.Normal(mean,torch.abs(std))
