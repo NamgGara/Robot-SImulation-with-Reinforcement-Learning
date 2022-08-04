@@ -71,7 +71,7 @@ if __name__ == "__main__":
         reward = torch.tensor(reward,requires_grad=False)
 
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), new_target)
-        advantage = torch.nn.MSELoss()(reward - DQN_old(old_states_as_tensors)) * -1
+        advantage = -1 * torch.nn.MSELoss()(reward,DQN_old(old_states_as_tensors))
 
         optimizer.zero_grad()
         delta.backward()
@@ -79,6 +79,9 @@ if __name__ == "__main__":
 
         actor_optimizer.zero_grad()
         advantage.backward()
+        print("the weights",ActorC.dense1.weight[0])
+        print("the weights",ActorC.dense1.weight.grad[0])
+
         actor_optimizer.step()
 
         sleep(1./400.)
