@@ -1,5 +1,4 @@
 import os
-from statistics import mode
 import pybullet as p
 import pybullet_data
 import random
@@ -43,8 +42,10 @@ with torch.cuda.device(0):
         ActorC.load_state_dict(torch.load(save_path2))
         ActorC.train()
 
+    contact = lambda: torch.tensor([int(p.getContactPoints(robot,plane,i)!=()) for i in joint_array])
     joint_states = p.getJointStates(robot, joint_array)
-    old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
+    
+    old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states]) + contact()
     old_head_coord = p.getLinkState(robot,robot_head)[0]
     threshold_cord = old_head_coord[2]
 
@@ -70,7 +71,7 @@ with torch.cuda.device(0):
             reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
 
             joint_states = p.getJointStates(robot, joint_array)
-            new_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
+            new_states_as_tensors = torch.tensor([joint[0] for joint in joint_states]) + contact()
             old_target = DQN_old(new_states_as_tensors)
 
             hyper_parameters.c_reward += reward + hyper_parameters.t_reward
@@ -91,8 +92,10 @@ with torch.cuda.device(0):
             
             actor_optimizer.step()
             # print(ActorC.final_mean.weight.grad_fn)
-            sleep(1./300.)
             old_states_as_tensors = new_states_as_tensors
+
+            print(contact())
+            sleep(1./300.)
 
         p.disconnect()
     
