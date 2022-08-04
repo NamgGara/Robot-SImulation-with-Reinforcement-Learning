@@ -24,15 +24,15 @@ class DQN(nn.Module):
 class ActorC(nn.Module):
     def __init__(self, feature_length):
         super().__init__()
-        self.dense1 = nn.Linear(in_features=feature_length, out_features=40)
-        self.dense2 = nn.Linear(in_features=40, out_features=30)
+        self.dense_1 = nn.Linear(in_features=feature_length, out_features=40)
+        self.dense_2 = nn.Linear(in_features=40, out_features=30)
         self.final_mean = nn.Linear(in_features=30, out_features=feature_length)
         self.final_std = nn.Linear(in_features=30, out_features=feature_length)
 
     def forward(self,joint_list):
 
-        result = nn.ReLU()(self.dense1(joint_list))
-        result = nn.ReLU()(self.dense2(result))
+        result = nn.ReLU()(self.dense_1(joint_list))
+        result = nn.ReLU()(self.dense_2(result))
         mean = self.final_mean(result)
         std = self.final_std(result)
         action = torch.distributions.Normal(mean,torch.abs(std))
