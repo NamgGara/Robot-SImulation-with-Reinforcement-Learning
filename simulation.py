@@ -31,10 +31,10 @@ ActorC = model.ActorC(feature_length=feature_length)
 DQN_old = model.DQN(feature_length=feature_length).requires_grad_(requires_grad=False)
 DQN_new = model.DQN(feature_length=feature_length)
 
-# if os.path.exists(save_path):
-#     for i in [DQN_old, DQN_new]:
-#         i.load_state_dict(torch.load(save_path))
-#         i.train()
+if os.path.exists(save_path):
+    for i in [DQN_old, DQN_new]:
+        i.load_state_dict(torch.load(save_path))
+        i.train()
 
 joint_states = p.getJointStates(robot, joint_array)
 old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
@@ -68,16 +68,9 @@ if __name__ == "__main__":
         reward = torch.tensor(reward,requires_grad=False)
 
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
-
-        print("before step, the weights are =",DQN_new.final_dense.weight)
-
         optimizer.zero_grad()
         delta.backward()
-        print("after backward, the grads",DQN_new.final_dense.weight.grad)
-
         optimizer.step()
-        print("after step, the weights are = ",DQN_new.final_dense.weight)
-
         sleep(1./150.)
         old_states_as_tensors = new_states_as_tensors
 
