@@ -8,14 +8,15 @@ import model
 
 hyper_parameters = model.Model_HyperParameters()
 robot_head = 2
-gravity = [0,0,-9.9]
-spawn_point = [0,0,1]
+gravity = [0,0,-90.9]
+spawn_point = [0,0,0]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
 learning_rate_DQN = 0.1
+learning_rate_AC = 0.1
 save_path = "new_parameters.pt"
-str_points = 1
-simualtion_step = 1
+str_points = 0.001
+simualtion_step = 10000
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -42,6 +43,7 @@ old_head_coord = p.getLinkState(robot,robot_head)[0]
 threshold_cord = old_head_coord[2]
 
 optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
+actor_optimizer = torch.optim.SGD(ActorC.parameters(), lr=learning_rate_AC)
 
 if __name__ == "__main__":
     for i in range(simualtion_step):
@@ -53,26 +55,33 @@ if __name__ == "__main__":
 
         p.stepSimulation()
 
-        #motor control 
+        #motor control
+        new_target = DQN_new(old_states_as_tensors)
+
         articulation = ActorC(old_states_as_tensors)        
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, strength)
-        
+        new_head_coord = p.getLinkState(robot,robot_head)[0][2]
+        reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
+
         joint_states = p.getJointStates(robot, joint_array)
         new_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
-        new_head_coord = p.getLinkState(robot,robot_head)[0][2]
-
         old_target = DQN_old(new_states_as_tensors)
-        
-        reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
+
         hyper_parameters.c_reward += reward + hyper_parameters.t_reward
         reward = torch.tensor(reward,requires_grad=False)
 
-        delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
+        delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), new_target)
+        advantage = torch.nn.MSELoss()(reward - DQN_old(old_states_as_tensors)) * -1
+
         optimizer.zero_grad()
         delta.backward()
         optimizer.step()
-        sleep(1./150.)
-        old_states_as_tensors = new_states_as_tensors
 
+        actor_optimizer.zero_grad()
+        advantage.backward()
+        actor_optimizer.step()
+
+        sleep(1./400.)
+        old_states_as_tensors = new_states_as_tensors
 
     p.disconnect()

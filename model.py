@@ -21,7 +21,6 @@ class DQN(nn.Module):
         result = nn.ReLU()(self.dense_2(result))
         return self.final_dense(result)
     
-
 class ActorC(nn.Module):
     def __init__(self, feature_length):
         super().__init__()
@@ -38,7 +37,6 @@ class ActorC(nn.Module):
         std = self.final_std(result)
         action = [torch.distributions.Normal(x,torch.abs(y)) for x,y in zip(mean,std)]
         return torch.tensor([act.sample() for act in action])
-
 
 def reward(progress,threshold):
     if progress > threshold:
