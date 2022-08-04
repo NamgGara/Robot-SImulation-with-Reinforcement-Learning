@@ -33,9 +33,10 @@ class ActorC(nn.Module):
 
         result = nn.ReLU()(self.dense_1(joint_list))
         result = nn.ReLU()(self.dense_2(result))
-        # mean and std are beoming smaller and smaller, vanishing gradients?
+        # residual blocks
         mean = self.final_mean(result) + joint_list
         std = self.final_std(result) + joint_list
+        #it seems distirbution has no grad or requires grad attribute
         return torch.distributions.Normal(mean,torch.abs(std))
 
 def reward(progress,threshold):

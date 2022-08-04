@@ -87,7 +87,6 @@ if __name__ == "__main__":
         advantage.backward(torch.ones_like(articulation))
 
         #the actor weights are not being updated
-        print(advantage)
         
         actor_optimizer.step()
 
