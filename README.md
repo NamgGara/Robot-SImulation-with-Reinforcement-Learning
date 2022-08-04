@@ -1,4 +1,4 @@
-# Reinforcement-learning-with-Python-Rust
+# Reinforcement-learning-project-for-self-learning
 
 
 
