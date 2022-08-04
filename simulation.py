@@ -1,4 +1,5 @@
 import os
+from statistics import mode
 import pybullet as p
 import pybullet_data
 import random
@@ -31,11 +32,12 @@ strength = [str_points for i in joint_array]
 ActorC = model.ActorC(feature_length=feature_length)
 DQN_old = model.DQN(feature_length=feature_length).requires_grad_(requires_grad=False)
 DQN_new = model.DQN(feature_length=feature_length)
+critic = model.DQN(feature_length=feature_length)
 
-if os.path.exists(save_path):
-    for i in [DQN_old, DQN_new]:
-        i.load_state_dict(torch.load(save_path))
-        i.train()
+# if os.path.exists(save_path):
+#     for i in [DQN_old, DQN_new]:
+#         i.load_state_dict(torch.load(save_path))
+#         i.train()
 
 joint_states = p.getJointStates(robot, joint_array)
 old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
@@ -51,11 +53,10 @@ if __name__ == "__main__":
 
         if i%100 == 0:
             DQN_old.load_state_dict(DQN_new.state_dict())
-            torch.save(DQN_new.state_dict(),save_path)
+            # torch.save(DQN_new.state_dict(),save_path)
 
         p.stepSimulation()
 
-        #motor control
         new_target = DQN_new(old_states_as_tensors)
 
         articulation = ActorC(old_states_as_tensors)        
@@ -71,7 +72,8 @@ if __name__ == "__main__":
         reward = torch.tensor(reward,requires_grad=False)
 
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), new_target)
-        advantage = -1 * torch.nn.MSELoss()(reward,DQN_old(old_states_as_tensors))
+        critic.load_state_dict(DQN_old.state_dict())
+        advantage = -1 * torch.nn.MSELoss()(reward,critic(articulation))
 
         optimizer.zero_grad()
         delta.backward()
@@ -79,9 +81,8 @@ if __name__ == "__main__":
 
         actor_optimizer.zero_grad()
         advantage.backward()
-        print("the weights",ActorC.dense1.weight[0])
-        print("the weights",ActorC.dense1.weight.grad[0])
 
+        print(articulation.grad)
         actor_optimizer.step()
 
         sleep(1./400.)
