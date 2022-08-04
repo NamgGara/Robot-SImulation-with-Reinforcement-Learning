@@ -9,7 +9,7 @@ import model
 
 hyper_parameters = model.Model_HyperParameters()
 robot_head = 2
-gravity = [0,0,-90.9]
+gravity = [0,0,-190.9]
 spawn_point = [0,0,0]
 spawn_pitch = p.getQuaternionFromEuler([0,0,0])
 urdf_model = "humanoid.urdf"
@@ -83,9 +83,12 @@ if __name__ == "__main__":
         optimizer.zero_grad()
         delta.backward()
         optimizer.step()
-        
         actor_optimizer.zero_grad()
         advantage.backward(torch.ones_like(articulation))
+
+        #the actor weights are not being updated
+        print(ActorC.final_mean.weight.grad_fn)
+
         actor_optimizer.step()
 
         sleep(1./400.)
