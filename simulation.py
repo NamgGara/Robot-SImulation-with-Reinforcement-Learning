@@ -78,7 +78,7 @@ if __name__ == "__main__":
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), new_target)
         critic.load_state_dict(DQN_old.state_dict())
 
-        advantage = -1 * torch.nn.MSELoss()(reward,critic(articulation)) * actor_critic_output.log_prob(articulation) # * ActorC(old_states_as_tensors).log_prob(torch.tensor(1))
+        advantage = -1 * (reward - critic(articulation)) * actor_critic_output.log_prob(articulation) # * ActorC(old_states_as_tensors).log_prob(torch.tensor(1))
 
         optimizer.zero_grad()
         delta.backward()
@@ -87,8 +87,8 @@ if __name__ == "__main__":
         advantage.backward(torch.ones_like(articulation))
 
         #the actor weights are not being updated
-        print(ActorC.final_mean.weight.grad_fn)
-
+        print(advantage)
+        
         actor_optimizer.step()
 
         sleep(1./400.)
