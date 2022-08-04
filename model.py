@@ -37,7 +37,7 @@ class ActorC(nn.Module):
         mean = self.final_mean(result) + joint_list
         std = self.final_std(result) + joint_list
         #it seems distirbution has no grad or requires grad attribute
-        return torch.distributions.Normal(mean,torch.abs(std))
+        return torch.distributions.normal.Normal(mean,torch.abs(std))
 
 def reward(progress,threshold):
     if progress > threshold:

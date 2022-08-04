@@ -89,8 +89,8 @@ if __name__ == "__main__":
         #the actor weights are not being updated
         
         actor_optimizer.step()
-
-        sleep(1./400.)
+        print(ActorC.final_mean.weight.grad_fn)
+        sleep(1./300.)
         old_states_as_tensors = new_states_as_tensors
 
     p.disconnect()
