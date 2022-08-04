@@ -58,8 +58,8 @@ if __name__ == "__main__":
         p.stepSimulation()
 
         new_target = DQN_new(old_states_as_tensors)
-
-        articulation = ActorC(old_states_as_tensors)        
+        actor_critic_output = ActorC(old_states_as_tensors)
+        articulation = actor_critic_output.sample()        
         p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, strength)
         new_head_coord = p.getLinkState(robot,robot_head)[0][2]
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), new_target)
         critic.load_state_dict(DQN_old.state_dict())
-        advantage = -1 * torch.nn.MSELoss()(reward,critic(articulation))
+        advantage = -1 * torch.nn.MSELoss()(reward,critic(articulation)) #* ActorC(old_states_as_tensors).log_prob(articulation)
 
         optimizer.zero_grad()
         delta.backward()
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         actor_optimizer.zero_grad()
         advantage.backward()
 
-        print(articulation.grad)
+        print(articulation.requires_grad)
         actor_optimizer.step()
 
         sleep(1./400.)

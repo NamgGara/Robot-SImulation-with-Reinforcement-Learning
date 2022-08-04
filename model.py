@@ -35,8 +35,10 @@ class ActorC(nn.Module):
         result = nn.ReLU()(self.dense_2(result))
         mean = self.final_mean(result)
         std = self.final_std(result)
-        action = torch.distributions.Normal(mean,torch.abs(std))
-        return action.sample()
+        return torch.distributions.Normal(mean,torch.abs(std))
+        # maybe action sample should be a function outside of method so that backpropagation works
+        # since it seems sample uses torch.no_grad in it
+
 
 def reward(progress,threshold):
     if progress > threshold:
