@@ -34,8 +34,8 @@ class ActorC(nn.Module):
         result = nn.ReLU()(self.dense_1(joint_list))
         result = nn.ReLU()(self.dense_2(result))
         # mean and std are beoming smaller and smaller, vanishing gradients?
-        mean = self.final_mean(result)
-        std = self.final_std(result)
+        mean = self.final_mean(result) + joint_list
+        std = self.final_std(result) + joint_list
         return torch.distributions.Normal(mean,torch.abs(std))
         # maybe action sample should be a function outside of method so that backpropagation works
         # since it seems sample uses torch.no_grad in it
