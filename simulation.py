@@ -28,6 +28,7 @@ strength = [str_points for i in joint_array]
 # from model.py
 ActorC = model.ActorC(feature_length=feature_length)
 DQN_old = model.DQN(feature_length=feature_length)
+DQN_old.requires_grad_(requires_grad=False)
 DQN_new = model.DQN(feature_length=feature_length)
 
 if os.path.exists(save_path):
@@ -60,19 +61,19 @@ if __name__ == "__main__":
         new_states_as_tensors = torch.tensor([joint[0] for joint in joint_states])
         new_head_coord = p.getLinkState(robot,robot_head)[0][2]
 
-        with torch.no_grad():
-            old_target = DQN_old(new_states_as_tensors).item()
+        old_target = DQN_old(new_states_as_tensors)
         
         reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
         hyper_parameters.c_reward += reward + hyper_parameters.t_reward
-        reward = torch.tensor(reward,requires_grad=True)
+        reward = torch.tensor(reward,requires_grad=False)
 
         delta = torch.nn.MSELoss()(reward + (hyper_parameters.discount * old_target), DQN_new(old_states_as_tensors))
+        # print(delta.grad_fn)
+        print(DQN_new.final_dense.weight.requires_grad)
+
         delta.backward()
         optimizer.step()
         # print debug
-        print(DQN_new.dense_1.weight.grad_fn)
-
         old_states_as_tensors = new_states_as_tensors
 
         sleep(1./150.)
