@@ -19,6 +19,7 @@ save_path = "new_parameters.pt"
 save_path2 = "new_actor.pt"
 str_points = 0.001
 simualtion_step = 10000
+simulation_speed = 1./300.
 
 # pybullet boilerplate
 physics_client = p.connect(p.GUI)
@@ -56,10 +57,11 @@ if __name__ == "__main__":
             p.stepSimulation()
 
             new_target = DQN_new(old_states_as_tensors)
+
             actor_critic_output = ActorC(old_states_as_tensors)
             articulation = actor_critic_output.sample() 
-                    
             p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, strength)
+
             new_head_coord = p.getLinkState(robot,robot_head)[0][2]
             reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
 
@@ -84,6 +86,5 @@ if __name__ == "__main__":
 
             old_states_as_tensors = new_states_as_tensors
             hyper_parameters.c_reward += reward + hyper_parameters.t_reward
-
-            sleep(1./300.)
+            sleep(simulation_speed)
         p.disconnect()
