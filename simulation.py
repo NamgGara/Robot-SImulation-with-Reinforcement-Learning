@@ -88,5 +88,7 @@ if __name__ == "__main__":
             old_states_as_tensors = new_states_as_tensors
             hyper_parameters.c_reward += reward + hyper_parameters.t_reward
             sleep(simulation_speed)
+            
             graph_model.plot(index=i, value=hyper_parameters.c_reward)
+            
         p.disconnect()
