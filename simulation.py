@@ -33,7 +33,7 @@ feature_length = len(joint_array)
 strength = [str_points for i in joint_array]
 
 ActorC, DQN_old, DQN_new, critic = model.model_construction(value=feature_length)
-plot_thread = graph_model.plot_thread.start()
+# plot_thread = graph_model.plot_thread.start()
 
 if __name__ == "__main__":
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             new_target = DQN_new(old_states_as_tensors)
 
             actor_critic_output = ActorC(old_states_as_tensors)
-            articulation = actor_critic_output.sample() 
+            articulation = actor_critic_output.sample() * 2
             p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, strength)
 
             new_head_coord = p.getLinkState(robot,robot_head)[0][2]
@@ -90,7 +90,6 @@ if __name__ == "__main__":
             hyper_parameters.c_reward += reward + hyper_parameters.t_reward
             sleep(simulation_speed)
             
-            # graph_model.plot(index=i, value=hyper_parameters.c_reward)
-            graph_model.get_values(index=i, value=hyper_parameters.c_reward)
+            # graph_model.get_values(index=i, value=hyper_parameters.c_reward)
             
         p.disconnect()
