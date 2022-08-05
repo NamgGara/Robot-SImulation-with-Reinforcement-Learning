@@ -4,10 +4,13 @@ import torchvision.transforms as transforms
 import torch.optim
 import torch.utils.data
 
+reward = 2
+
 class Model_HyperParameters:
     discount = 0.9
     t_reward = -1
     c_reward = 0
+    reward = 2
 
 class DQN(nn.Module):
     def __init__(self,feature_length):
@@ -33,16 +36,24 @@ class ActorC(nn.Module):
 
         result = nn.ReLU()(self.dense_1(joint_list))
         result = nn.ReLU()(self.dense_2(result))
+
         # residual blocks
         mean = self.final_mean(result) + joint_list
         std = self.final_std(result) + joint_list
-        #it seems distirbution has no grad or requires grad attribute
         return torch.distributions.normal.Normal(mean,torch.abs(std))
 
 def reward(progress,threshold):
     if progress > threshold:
-        return 10.0, (new_threshold:=progress)
+        return reward, progress
     else:
         return 0.0, threshold
 
+def model_construction(value):
+    
+    with torch.cuda.device(0):
+        actor_model = ActorC(feature_length=value)
+        DQN_target = DQN(feature_length=value).requires_grad_(requires_grad=False)
+        DQN_new = DQN(feature_length=value)
+        critic = DQN(feature_length=value)
 
+    return actor_model,DQN_target,DQN_new,critic

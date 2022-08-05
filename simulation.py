@@ -30,12 +30,9 @@ joint_array = range(p.getNumJoints(robot))
 feature_length = len(joint_array)
 strength = [str_points for i in joint_array]
 
+ActorC, DQN_old, DQN_new, critic = model.model_construction(value=feature_length)
+
 with torch.cuda.device(0):
-    # from model.py
-    ActorC = model.ActorC(feature_length=feature_length)
-    DQN_old = model.DQN(feature_length=feature_length).requires_grad_(requires_grad=False)
-    DQN_new = model.DQN(feature_length=feature_length)
-    critic = model.DQN(feature_length=feature_length)
 
     if os.path.exists(save_path):
         for nn_model,saving_path in zip([DQN_old, DQN_new, ActorC],[save_path,save_path,save_path2]):
