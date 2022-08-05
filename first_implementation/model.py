@@ -39,7 +39,7 @@ class ActorC(nn.Module):
         # residual blocks
         mean = self.final_mean(result) + joint_list
         std = self.final_std(result) + joint_list
-        return torch.distributions.normal.Normal(mean,torch.log(std))
+        return torch.distributions.normal.Normal(mean,torch.abs(std))
 
 def reward(progress,threshold):
     if progress > threshold:
