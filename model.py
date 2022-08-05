@@ -4,8 +4,6 @@ import torchvision.transforms as transforms
 import torch.optim
 import torch.utils.data
 
-reward = 2
-
 class Model_HyperParameters:
     discount = 0.9
     t_reward = -1
@@ -44,12 +42,12 @@ class ActorC(nn.Module):
 
 def reward(progress,threshold):
     if progress > threshold:
-        return reward, progress
+        return 2, progress
     else:
         return 0.0, threshold
 
 def model_construction(value):
-    
+
     with torch.cuda.device(0):
         actor_model = ActorC(feature_length=value)
         DQN_target = DQN(feature_length=value).requires_grad_(requires_grad=False)
