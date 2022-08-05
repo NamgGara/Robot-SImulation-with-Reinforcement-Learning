@@ -37,16 +37,14 @@ if __name__ == "__main__":
     with torch.cuda.device(0):
 
         model.model_loading(save_path,[DQN_old, DQN_new, ActorC],[save_path,save_path,save_path2])
+        optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
+        actor_optimizer = torch.optim.SGD(ActorC.parameters(), lr=learning_rate_AC)
 
         contact = lambda: torch.tensor([int(p.getContactPoints(robot,plane,i)!=()) for i in joint_array])
         joint_states = p.getJointStates(robot, joint_array)
-        
         # concat vs add
         old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states]) + contact()
         threshold_cord = p.getLinkState(robot,robot_head)[0][2]
-
-        optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
-        actor_optimizer = torch.optim.SGD(ActorC.parameters(), lr=learning_rate_AC)
 
         for i in range(simualtion_step):
 
@@ -54,7 +52,7 @@ if __name__ == "__main__":
                 DQN_old.load_state_dict(DQN_new.state_dict())
                 torch.save(DQN_new.state_dict(),save_path)
                 torch.save(ActorC.state_dict(),save_path2)
-
+            
             p.stepSimulation()
 
             new_target = DQN_new(old_states_as_tensors)
