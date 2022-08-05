@@ -6,6 +6,7 @@ from time import sleep
 import torch
 import model
 
+#hyper parameters
 hyper_parameters = model.Model_HyperParameters()
 robot_head = 2
 gravity = [0,0,-190.9]
@@ -19,6 +20,7 @@ save_path2 = "new_actor.pt"
 str_points = 0.001
 simualtion_step = 10000
 
+# pybullet boilerplate
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(*gravity)
@@ -36,11 +38,9 @@ with torch.cuda.device(0):
     critic = model.DQN(feature_length=feature_length)
 
     if os.path.exists(save_path):
-        for i in [DQN_old, DQN_new]:
-            i.load_state_dict(torch.load(save_path))
+        for i,j in zip([DQN_old, DQN_new, ActorC],[save_path,save_path,save_path2]):
+            i.load_state_dict(torch.load(j))
             i.train()
-        ActorC.load_state_dict(torch.load(save_path2))
-        ActorC.train()
 
     contact = lambda: torch.tensor([int(p.getContactPoints(robot,plane,i)!=()) for i in joint_array])
     joint_states = p.getJointStates(robot, joint_array)
