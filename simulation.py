@@ -32,24 +32,22 @@ strength = [str_points for i in joint_array]
 
 ActorC, DQN_old, DQN_new, critic = model.model_construction(value=feature_length)
 
-with torch.cuda.device(0):
+if __name__ == "__main__":
 
-    if os.path.exists(save_path):
-        for nn_model,saving_path in zip([DQN_old, DQN_new, ActorC],[save_path,save_path,save_path2]):
-            nn_model.load_state_dict(torch.load(saving_path))
-            nn_model.train()
+    with torch.cuda.device(0):
 
-    contact = lambda: torch.tensor([int(p.getContactPoints(robot,plane,i)!=()) for i in joint_array])
-    joint_states = p.getJointStates(robot, joint_array)
-    
-    # concat vs add
-    old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states]) + contact()
-    threshold_cord = p.getLinkState(robot,robot_head)[0][2]
+        model.model_loading(save_path,[DQN_old, DQN_new, ActorC],[save_path,save_path,save_path2])
 
-    optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
-    actor_optimizer = torch.optim.SGD(ActorC.parameters(), lr=learning_rate_AC)
+        contact = lambda: torch.tensor([int(p.getContactPoints(robot,plane,i)!=()) for i in joint_array])
+        joint_states = p.getJointStates(robot, joint_array)
+        
+        # concat vs add
+        old_states_as_tensors = torch.tensor([joint[0] for joint in joint_states]) + contact()
+        threshold_cord = p.getLinkState(robot,robot_head)[0][2]
 
-    if __name__ == "__main__":
+        optimizer = torch.optim.SGD(DQN_new.parameters(),lr=learning_rate_DQN)
+        actor_optimizer = torch.optim.SGD(ActorC.parameters(), lr=learning_rate_AC)
+
         for i in range(simualtion_step):
 
             if i%100 == 0:
@@ -62,7 +60,7 @@ with torch.cuda.device(0):
             new_target = DQN_new(old_states_as_tensors)
             actor_critic_output = ActorC(old_states_as_tensors)
             articulation = actor_critic_output.sample() 
-                   
+                    
             p.setJointMotorControlArray(robot, joint_array, p.POSITION_CONTROL, articulation, strength)
             new_head_coord = p.getLinkState(robot,robot_head)[0][2]
             reward, threshold_cord = model.reward(new_head_coord, threshold_cord)
@@ -91,4 +89,3 @@ with torch.cuda.device(0):
 
             sleep(1./300.)
         p.disconnect()
-    

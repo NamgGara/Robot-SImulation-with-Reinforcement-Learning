@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 import torch.optim
 import torch.utils.data
+import os
 
 class Model_HyperParameters:
     discount = 0.9
@@ -55,3 +56,9 @@ def model_construction(value):
         critic = DQN(feature_length=value)
 
     return actor_model,DQN_target,DQN_new,critic
+
+def model_loading(file_path, list_of_model, list_of_file_path):
+    if os.path.exists(file_path):
+        for nn_model,saving_path in zip(list_of_model,list_of_file_path):
+            nn_model.load_state_dict(torch.load(saving_path))
+            nn_model.train()
