@@ -10,7 +10,7 @@ hyper_parameters = model.Model_HyperParameters()
 robot_head = 2
 gravity = [0,0,-190.9]
 spawn_point = [0,0,0]
-spawn_pitch = p.getQuaternionFromEuler([0,0,0])
+spawn_pitch = p.getQuaternionFromEuler([0,1,0])
 urdf_model = "humanoid.urdf"
 learning_rate_DQN = 0.1
 learning_rate_AC = 0.0001
@@ -94,7 +94,6 @@ with torch.cuda.device(0):
             # print(ActorC.final_mean.weight.grad_fn)
             old_states_as_tensors = new_states_as_tensors
 
-            print(contact())
             sleep(1./300.)
 
         p.disconnect()
