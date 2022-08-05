@@ -11,7 +11,7 @@ if not os.path.exists(file_path):
 plt.ion()
 fig, ax= plt.subplots()
 
-def plot(ax,index,value):
+def plot(index,value,ax=ax):
 
     # plt.gca().cla() # optionally clear axes
     ax.scatter(index,value)
