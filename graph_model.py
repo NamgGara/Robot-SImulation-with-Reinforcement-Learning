@@ -15,7 +15,6 @@ def plot(index,value,ax=ax):
 
     # plt.gca().cla() # optionally clear axes
     ax.scatter(index,value)
-    plt.title(str(index))
     plt.draw()
     plt.pause(0.1)
 
