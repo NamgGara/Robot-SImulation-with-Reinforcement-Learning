@@ -12,10 +12,9 @@ plt.ion()
 fig, ax= plt.subplots()
 
 def plot(index,value,ax=ax):
-    while True:
-        # plt.gca().cla() # optionally clear axes
-        ax.scatter(index,value)
-        plt.title(str(index))
-        plt.draw()
-        plt.pause(0.1)
+    # plt.gca().cla() # optionally clear axes
+    ax.scatter(index,value)
+    plt.title(str(index))
+    plt.draw()
+    plt.pause(0.1)
 
