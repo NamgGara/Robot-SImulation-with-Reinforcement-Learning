@@ -34,6 +34,8 @@ strength = [str_points for i in joint_array]
 
 ActorC, DQN_old, DQN_new, critic = model.model_construction(value=feature_length)
 
+plot_thread = graph_model.plot_thread.start()
+
 if __name__ == "__main__":
 
     with torch.cuda.device(0):
@@ -89,6 +91,7 @@ if __name__ == "__main__":
             hyper_parameters.c_reward += reward + hyper_parameters.t_reward
             sleep(simulation_speed)
             
-            graph_model.plot(index=i, value=hyper_parameters.c_reward)
+            # graph_model.plot(index=i, value=hyper_parameters.c_reward)
+            graph_model.get_values(index=i, value=hyper_parameters.c_reward)
             
         p.disconnect()
