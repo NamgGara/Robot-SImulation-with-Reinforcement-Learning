@@ -4,6 +4,7 @@ from time import sleep
 import hyperparameters
 import PPO_model
 import torch
+import reward_tuning as rt
 
 # pybullet boilerplate
 physics_client = p.connect(p.GUI)
@@ -22,25 +23,37 @@ def get_states_and_contact(robot_id=robot, plane_id=plane, joint_id=joint_array)
     joint_contacts = [(1 if x!=() else 0) for x in raw_contact]
     return torch.tensor(joint_states + joint_contacts)
 
-input = get_states_and_contact()
+def head_Z_coord():
+    return p.getLinkState(robot,2)[0][2]
 
-batch_dist = []
-batch_action = []
+def reset_robot(robot):
+    p.removeBody(robot)
+    return p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point,
+                   p.getQuaternionFromEuler(hyperparameters.spawn_pitch))
+
+input_tensor = get_states_and_contact()
+
+batch = torch.tensor([])
+rt.reward.set_threshold(head_Z_coord())
+print(head_Z_coord())
 
 for i in range(hyperparameters.simualtion_step):
 
-    if i%500 ==0:
-        
-
-        batch_action, batch_dist = [],[]
+    if i> 1 and i%100 ==0:
+        PPO_model.training(batch)
+        batch = torch.tensor([])
+        robot = reset_robot(robot)
 
     p.stepSimulation()
 
+    dist, action = PPO_model.get_dist_and_action(input_tensor)
+
+    p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
+
+    reward = rt.reward(head_Z_coord())
+    batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,reward)), 0)
+
+    input_tensor = get_states_and_contact()
     sleep(hyperparameters.simulation_speed)
 
-    dist, action = PPO_model.policy_distribution_and_action(input)
-    batch_dist +=dist
-    batch_action +=action
-
-    input = get_states_and_contact()
 p.disconnect()
