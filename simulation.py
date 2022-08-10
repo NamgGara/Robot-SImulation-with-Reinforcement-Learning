@@ -7,11 +7,11 @@ import hyperparameters
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(*hyperparameters.gravity)
-plane = p.loadURDF("plane.urdf")
-robot = p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point, p.getQuaternionFromEuler(hyperparameters.spawn_pitch))
-joint_array = range(p.getNumJoints(robot))
-feature_length = len(joint_array)
 
+plane = p.loadURDF(hyperparameters.plane)
+robot = p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point,
+                   p.getQuaternionFromEuler(hyperparameters.spawn_pitch))
+joint_array, feature_length = range(p.getNumJoints(robot)), len(range(p.getNumJoints(robot)))
 
 if __name__ == "__main__":
 
