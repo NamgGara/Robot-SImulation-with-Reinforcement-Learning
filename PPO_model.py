@@ -1,3 +1,4 @@
+from xml.sax.handler import feature_external_ges
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,11 +7,11 @@ import hyperparameters
 
 # first test with VPG, not PPO
 class VPG(nn.Module):
-    def __init__(self, state_space):
+    def __init__(self, state_space, action_space):
         super().__init__()
-        self.layer_1 = nn.Linear(in_features= state_space, out_features= (state_space -3))
-        self.layer_2 = nn.Linear(in_features= (state_space -3), out_features= (state_space - 8))
-        self.layer_3 = nn.Linear(in_features= (state_space - 8), out_features= 1)
+        self.layer_1 = nn.Linear(in_features= state_space, out_features= (state_space + 3))
+        self.layer_2 = nn.Linear(in_features= (state_space + 3), out_features= (state_space + 4))
+        self.layer_3 = nn.Linear(in_features= (state_space + 4), out_features= action_space)
 
     def forward(self,input):
         input = F.relu(self.layer_1(input))
@@ -20,8 +21,19 @@ class VPG(nn.Module):
 # class PPO(nn.Module):
 #     def __init__(self):
 #         super().__init__()
-from hyperparameters import feature_length
 
-VPG_mu = VPG(feature_length)
-VPG_sigma = VPG(feature_length)
+VPG_mu = VPG(hyperparameters.feature_length, hyperparameters.action_space)
+VPG_sigma = VPG(hyperparameters.feature_length, hyperparameters.action_space)
+
+def policy_distribution_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
+    mean = mu(input)
+    std = torch.log(sigma(input))
+    dist = torch.distributions.Normal(loc=mean, scale=std)
+
+    print()
+    print("the scale is ", std)
+    print("gradient   ___", VPG_mu.layer_1.weight.grad)
+    
+    return dist, dist.sample()
+
 

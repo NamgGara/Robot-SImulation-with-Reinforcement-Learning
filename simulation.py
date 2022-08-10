@@ -3,6 +3,7 @@ import pybullet_data
 from time import sleep
 import hyperparameters
 import PPO_model
+import torch
 
 # pybullet boilerplate
 physics_client = p.connect(p.GUI)
@@ -19,9 +20,9 @@ def get_states_and_contact(robot_id=robot, plane_id=plane, joint_id=joint_array)
     raw_contact = (p.getContactPoints(robot_id,plane_id, x) for x in joint_array)
     joint_states = [x[0] for x in raw_states]
     joint_contacts = [(1 if x!=() else 0) for x in raw_contact]
-    return joint_states, joint_contacts
+    return torch.tensor(joint_states + joint_contacts)
 
-joint_states, joint_contacts = get_states_and_contact()
+input = get_states_and_contact()
 
 for i in range(hyperparameters.simualtion_step):
 
@@ -29,5 +30,10 @@ for i in range(hyperparameters.simualtion_step):
 
     sleep(hyperparameters.simulation_speed)
 
-    joint_states, joint_contacts = get_states_and_contact()
+    if i%200 ==0:
+        dist, action = PPO_model.policy_distribution_and_action(input)
+        print(dist)
+        print(action)
+
+    input = get_states_and_contact()
 p.disconnect()
