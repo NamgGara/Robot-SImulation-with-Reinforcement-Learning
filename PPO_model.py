@@ -38,13 +38,17 @@ def policy_distribution_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
     
     return dist, dist.sample()
 
-
 def return_and_backward(action, dist, reward):
     _grad_list = -1 * dist.log_prob(action) * reward
     return _grad_list.mean() #this is like returning an expectation of the tragetory and reward of tregetory
 
-def training(batch_input, batch_action, batch_return_,
+def training(batch_dist, batch_action, batch_return,
              op_mu=mu_optimizer, op_sig= sigma_optimizer, vpg_mu = VPG_mu, vpg_sig= VPG_sigma):
     
-    pass
+    tau_return = torch.tensor(sum(batch_return))
+    
+    batch_return = return_and_backward(batch_action,batch_dist, reward=tau_return)
+
+    for i in (op_mu, op_sig):
+        i.zero_grad()
 

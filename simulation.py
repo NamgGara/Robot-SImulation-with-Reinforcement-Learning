@@ -24,16 +24,23 @@ def get_states_and_contact(robot_id=robot, plane_id=plane, joint_id=joint_array)
 
 input = get_states_and_contact()
 
+batch_dist = []
+batch_action = []
+
 for i in range(hyperparameters.simualtion_step):
+
+    if i%500 ==0:
+        
+
+        batch_action, batch_dist = [],[]
 
     p.stepSimulation()
 
     sleep(hyperparameters.simulation_speed)
 
-    if i%200 ==0:
-        dist, action = PPO_model.policy_distribution_and_action(input)
-        print(dist)
-        print(action)
+    dist, action = PPO_model.policy_distribution_and_action(input)
+    batch_dist +=dist
+    batch_action +=action
 
     input = get_states_and_contact()
 p.disconnect()
