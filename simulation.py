@@ -62,6 +62,8 @@ for a in range(hyperparameters.epoch):
     robot = reset_robot(robot)
     PPO_model.save_model()
     rt.reward.reset()
+    print(f"rewards are {batch.mean()}")
+    print(f"progress was {rt.reward.threshold}")
     
 p.disconnect()
 
