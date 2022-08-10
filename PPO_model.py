@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim
 import hyperparameters
+import os
 
 # first test with VPG, not PPO
 class VPG(nn.Module):
@@ -22,6 +23,15 @@ VPG_sigma = VPG(hyperparameters.feature_length, hyperparameters.action_space)
 
 mu_optimizer, sigma_optimizer = [torch.optim.Adam(x.parameters(),lr=y) for x,y in
                                 zip([VPG_mu,VPG_sigma],[hyperparameters.VPG_mu_learning_rate,hyperparameters.VPG_sigma_learning_rate])]
+
+def save_model():
+    torch.save(VPG_mu.state_dict(), "mean_model.pt")
+    torch.save(VPG_sigma.state_dict(), "st_dev_model.pt")
+
+def load_model(file_name_mean, file_name_std, mu=VPG_mu, sig=VPG_sigma):
+    for i,j in zip([file_name_mean,file_name_std],[mu, sig]):
+        if os.path.exists(i):
+            j.load_state_dict(torch.load(i))
 
 def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
     mean = mu(input)
@@ -43,7 +53,7 @@ def training(batch, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     sig_opt.zero_grad()
 
     batch.mean().backward()
-    
+
     mu_opt.step()
     sig_opt.step()
 
