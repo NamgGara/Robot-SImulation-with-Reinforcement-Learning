@@ -2,6 +2,7 @@ import pybullet as p
 import pybullet_data
 from time import sleep
 import hyperparameters
+import PPO_model
 
 # pybullet boilerplate
 physics_client = p.connect(p.GUI)
