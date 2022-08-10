@@ -51,4 +51,6 @@ def training(batch_dist, batch_action, batch_return,
 
     for i in (op_mu, op_sig):
         i.zero_grad()
+        batch_return.backward()
+        i.step()
 
