@@ -43,7 +43,7 @@ def return_and_backward(action, dist, reward):
     _grad_list = -1 * dist.log_prob(action) * reward
     return _grad_list.mean() #this is like returning an expectation of the tragetory and reward of tregetory
 
-def training(batch_input, batch_action, batch_return_
+def training(batch_input, batch_action, batch_return_,
              op_mu=mu_optimizer, op_sig= sigma_optimizer, vpg_mu = VPG_mu, vpg_sig= VPG_sigma):
     
     pass
