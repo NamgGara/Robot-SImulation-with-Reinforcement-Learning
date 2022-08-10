@@ -1,30 +1,23 @@
 import pybullet as p
 import pybullet_data
 from time import sleep
-
-#hyper parameters
-gravity = [0,0,-190.9]
-spawn_point = [0,0,0]
-spawn_pitch = p.getQuaternionFromEuler([0,1,0])
-urdf_model = "..\\humanoid.urdf"
-simualtion_step = 10000
-simulation_speed = 1./300.
+import hyperparameters
 
 # pybullet boilerplate
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
-p.setGravity(*gravity)
+p.setGravity(*hyperparameters.gravity)
 plane = p.loadURDF("plane.urdf")
-robot = p.loadURDF(urdf_model, spawn_point, spawn_pitch)
+robot = p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point, p.getQuaternionFromEuler(hyperparameters.spawn_pitch))
 joint_array = range(p.getNumJoints(robot))
 feature_length = len(joint_array)
 
 
 if __name__ == "__main__":
 
-    for i in range(simualtion_step):
+    for i in range(hyperparameters.simualtion_step):
 
         p.stepSimulation()
-        sleep(simulation_speed)
+        sleep(hyperparameters.simulation_speed)
         
     p.disconnect()
