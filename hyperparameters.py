@@ -8,3 +8,4 @@ urdf_model = "..\\humanoid.urdf"
 plane = "plane.urdf"
 simualtion_step = 10000
 simulation_speed = 1./300.
+feature_length = 15 + 15
