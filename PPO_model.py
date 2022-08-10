@@ -27,13 +27,16 @@ VPG_sigma = VPG(hyperparameters.feature_length, hyperparameters.action_space)
 
 def policy_distribution_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
     mean = mu(input)
-    std = torch.log(sigma(input))
+    std = torch.exp(sigma(input))
     dist = torch.distributions.Normal(loc=mean, scale=std)
 
     print()
-    print("the scale is ", std)
     print("gradient   ___", VPG_mu.layer_1.weight.grad)
     
     return dist, dist.sample()
 
+# def return_and_backward(action, dist):
+#     J_gradient = -1 * dist.log_prob(action)
+
+return_and_backward = lambda action, dist: -1 * dist.log_prob(action)
 
