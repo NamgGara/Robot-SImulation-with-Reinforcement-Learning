@@ -5,6 +5,9 @@ class Reward_for_standing():
         self.threshold = 0
         self.reward = 5
         self.punishment = -1
+    
+    def set_threshold(self, value):
+        self.threshold = value
 
     def __call__(self,progress):
         if progress > self.threshold:
