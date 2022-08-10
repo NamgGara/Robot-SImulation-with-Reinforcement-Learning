@@ -39,7 +39,7 @@ print(head_Z_coord())
 
 for i in range(hyperparameters.simualtion_step):
 
-    if i> 1 and i%100 ==0:
+    if i> 1 and i%500 ==0:
         PPO_model.training(batch)
         batch = torch.tensor([])
         robot = reset_robot(robot)
