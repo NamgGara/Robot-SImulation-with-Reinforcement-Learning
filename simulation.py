@@ -13,7 +13,8 @@ p.setGravity(*hyperparameters.gravity)
 
 plane = p.loadURDF(hyperparameters.plane)
 robot = p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point,
-                   p.getQuaternionFromEuler(hyperparameters.spawn_pitch))
+                   p.getQuaternionFromEuler(hyperparameters.spawn_pitch),
+                   flags= p.URDF_USE_SELF_COLLISION)
 joint_array, feature_length = list(range(p.getNumJoints(robot))),  len(range(p.getNumJoints(robot)))
 
 def get_states_and_contact(robot_id=robot, plane_id=plane, joint_id=joint_array):
@@ -29,7 +30,8 @@ def head_Z_coord():
 def reset_robot(robot):
     p.removeBody(robot)
     return p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point,
-                   p.getQuaternionFromEuler(hyperparameters.spawn_pitch))
+                   p.getQuaternionFromEuler(hyperparameters.spawn_pitch),
+                   flags= p.URDF_USE_SELF_COLLISION)
 
 input_tensor = get_states_and_contact()
 
@@ -51,6 +53,8 @@ for i in range(hyperparameters.epoch):
 
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
+
+        print(p.getOverlappingObjects(robot,robot))
     
     PPO_model.training(batch)
     batch = torch.tensor([])

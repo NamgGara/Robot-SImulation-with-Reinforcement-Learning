@@ -1,4 +1,8 @@
 
+def overlapping_punishment(list):
+    if not list:
+        return -1
+
 class Reward_for_standing():
     def __init__(self) -> None:
         
