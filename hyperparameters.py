@@ -5,7 +5,9 @@ spawn_pitch = [0,1,0]
 urdf_model = "..\\humanoid.urdf"
 plane = "plane.urdf"
 
-simualtion_step = 10000
+simualtion_step = 1000
+epoch = 10
+
 simulation_speed = 1./300.
 
 feature_length = 15 + 15

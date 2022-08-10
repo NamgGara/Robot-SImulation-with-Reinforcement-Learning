@@ -37,23 +37,23 @@ batch = torch.tensor([])
 rt.reward.set_threshold(head_Z_coord())
 print(head_Z_coord())
 
-for i in range(hyperparameters.simualtion_step):
+for i in range(hyperparameters.epoch):
+    for i in range(hyperparameters.simualtion_step):
 
-    if i> 1 and i%500 ==0:
-        PPO_model.training(batch)
-        batch = torch.tensor([])
-        robot = reset_robot(robot)
+        p.stepSimulation()
 
-    p.stepSimulation()
+        dist, action = PPO_model.get_dist_and_action(input_tensor)
 
-    dist, action = PPO_model.get_dist_and_action(input_tensor)
+        p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
-    p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
+        reward = rt.reward(head_Z_coord())
+        batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,reward)), 0)
 
-    reward = rt.reward(head_Z_coord())
-    batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,reward)), 0)
-
-    input_tensor = get_states_and_contact()
-    sleep(hyperparameters.simulation_speed)
+        input_tensor = get_states_and_contact()
+        sleep(hyperparameters.simulation_speed)
+    
+    PPO_model.training(batch)
+    batch = torch.tensor([])
+    robot = reset_robot(robot)
 
 p.disconnect()
