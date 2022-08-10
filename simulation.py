@@ -50,20 +50,20 @@ for a in range(hyperparameters.epoch):
 
         reward = rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
         batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,reward)), 0)
-
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
 
         if i%10==0:
             print(f"epoch=> {a}, and loop {i}")
-    
+            
+    print(f"rewards are {batch.mean()}")
+    print(f"progress was {rt.reward.threshold}")
     PPO_model.training(batch)
     batch = torch.tensor([])
     robot = reset_robot(robot)
     PPO_model.save_model()
     rt.reward.reset()
-    print(f"rewards are {batch.mean()}")
-    print(f"progress was {rt.reward.threshold}")
+
     
 p.disconnect()
 
