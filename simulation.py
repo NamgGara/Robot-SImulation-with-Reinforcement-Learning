@@ -39,7 +39,7 @@ batch = torch.tensor([])
 rt.reward.set_threshold(head_Z_coord())
 print(head_Z_coord())
 
-for i in range(hyperparameters.epoch):
+for a in range(hyperparameters.epoch):
     for i in range(hyperparameters.simualtion_step):
 
         p.stepSimulation()
@@ -54,7 +54,8 @@ for i in range(hyperparameters.epoch):
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
 
-        print(p.getContactPoints(robot,robot))
+        if i%10==0:
+            print(f"epoch=> {a}, and loop {i}")
     
     PPO_model.training(batch)
     batch = torch.tensor([])
@@ -63,3 +64,5 @@ for i in range(hyperparameters.epoch):
     rt.reward.reset()
     
 p.disconnect()
+
+
