@@ -46,15 +46,15 @@ for i in range(hyperparameters.epoch):
 
         dist, action = PPO_model.get_dist_and_action(input_tensor)
 
-        p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
+        # p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
-        reward = rt.reward(head_Z_coord())
+        reward = rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
         batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,reward)), 0)
 
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
 
-        print(p.getOverlappingObjects(robot,robot))
+        print(p.getContactPoints(robot,robot))
     
     PPO_model.training(batch)
     batch = torch.tensor([])
