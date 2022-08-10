@@ -1,4 +1,3 @@
-from xml.sax.handler import feature_external_ges
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -24,33 +23,29 @@ VPG_sigma = VPG(hyperparameters.feature_length, hyperparameters.action_space)
 mu_optimizer, sigma_optimizer = [torch.optim.Adam(x.parameters(),lr=y) for x,y in
                                 zip([VPG_mu,VPG_sigma],[hyperparameters.VPG_mu_learning_rate,hyperparameters.VPG_sigma_learning_rate])]
 
-# class PPO(nn.Module):
-#     def __init__(self):
-#         super().__init__()
-
-def policy_distribution_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
+def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
     mean = mu(input)
     std = torch.exp(sigma(input))
     dist = torch.distributions.Normal(loc=mean, scale=std)
 
-    print()
-    print("gradient   ___", VPG_mu.layer_1.weight.grad)
+    # print()
+    # print("gradient   ___", VPG_mu.layer_1.weight.grad)
     
     return dist, dist.sample()
 
-def return_and_backward(action, dist, reward):
-    _grad_list = -1 * dist.log_prob(action) * reward
-    return _grad_list.mean() #this is like returning an expectation of the tragetory and reward of tregetory
+def log_prob_and_tau(action, dist, reward):
+    return -1 * dist.log_prob(action) * reward
+      #this is like returning an expectation of the tragetory and reward of tregetory
 
-def training(batch_dist, batch_action, batch_return,
-             op_mu=mu_optimizer, op_sig= sigma_optimizer, vpg_mu = VPG_mu, vpg_sig= VPG_sigma):
+def training(batch, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     
-    tau_return = torch.tensor(sum(batch_return))
-    
-    batch_return = return_and_backward(batch_action,batch_dist, reward=tau_return)
+    mu_opt.zero_grad()
+    sig_opt.zero_grad()
 
-    for i in (op_mu, op_sig):
-        i.zero_grad()
-        batch_return.backward()
-        i.step()
+    batch.mean().backward()
+    
+    mu_opt.step()
+    sig_opt.step()
+
+
 
