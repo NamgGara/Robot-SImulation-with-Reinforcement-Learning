@@ -13,6 +13,9 @@ class Reward_for_standing():
     
     def set_threshold(self, value):
         self.threshold = value
+    
+    def reset(self):
+        self.threshold = 0
 
     def __call__(self,progress):
         if progress > self.threshold:
