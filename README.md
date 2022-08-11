@@ -1,6 +1,6 @@
 # Reinforcement-learning-project-for-self-learning
 
-![Import_image](imgs\import_block_diagram.png)
+![Import_image](/imgs/import_block_diagram.png)
 
 Credits 
 
