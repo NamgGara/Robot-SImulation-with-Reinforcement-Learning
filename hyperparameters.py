@@ -6,7 +6,7 @@ urdf_model = "..\\humanoid.urdf"
 plane = "plane.urdf"
 
 simualtion_step = 1000
-epoch = 10
+epoch = 15
 
 simulation_speed = 1./300.
 
