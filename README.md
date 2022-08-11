@@ -1,6 +1,6 @@
 # Reinforcement-learning-project-for-self-learning
 
-![Alt text](robot\Robot-SImulation-with-Reinforcement-Learning\imgs\import_block_diagram.png?raw=true "Title")
+![Alt text](\Robot-SImulation-with-Reinforcement-Learning\imgs\import_block_diagram.png?raw=true "Title")
 
 Credits 
 
