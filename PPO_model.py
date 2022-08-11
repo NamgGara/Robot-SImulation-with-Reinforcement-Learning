@@ -32,8 +32,6 @@ def save_model():
     torch.save(VPG_mu.state_dict(), "mean_model.pt")
     torch.save(VPG_sigma.state_dict(), "st_dev_model.pt")
 
-
-
 def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
     mean = mu(input)
     std = torch.exp(sigma(input))
@@ -44,11 +42,11 @@ def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
     
     return dist, dist.sample()
 
-def log_prob_and_tau(action, dist, reward):
-    return -1 * dist.log_prob(action) * reward
+def log_prob_and_tau(action, dist):
+    return -1 * dist.log_prob(action)
       #this is like returning an expectation of the tragetory and reward of tregetory
 
-def training(batch, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
+def training(batch,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     
     mu_opt.zero_grad()
     sig_opt.zero_grad()

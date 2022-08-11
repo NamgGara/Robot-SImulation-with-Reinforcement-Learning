@@ -31,7 +31,7 @@ def reset_robot(robot):
     p.removeBody(robot)
     return p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point,
                    p.getQuaternionFromEuler(hyperparameters.spawn_pitch),
-                   flags= p.URDF_USE_SELF_COLLISION)
+                   flags= p.URDF_USE_SELF_COLLISION) , 0
 
 input_tensor = get_states_and_contact()
 
@@ -49,7 +49,7 @@ for a in range(hyperparameters.epoch):
         p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
         c_reward = rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
-        batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,c_reward)), 0)
+        batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist)), 0)
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
 
@@ -58,9 +58,9 @@ for a in range(hyperparameters.epoch):
             
     print(f"rewards are {batch.mean()}")
     print(f"progress was {rt.reward.threshold}")
-    PPO_model.training(batch)
+    PPO_model.training(batch, c_reward)
     batch = torch.tensor([])
-    robot = reset_robot(robot)
+    robot, c_reward = reset_robot(robot)
     PPO_model.save_model()
     rt.reward.reset()
 
