@@ -50,8 +50,8 @@ def training(batch,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     
     mu_opt.zero_grad()
     sig_opt.zero_grad()
-
-    batch.mean().backward()
+    result = batch.mean() * reward
+    result.backward()
 
     mu_opt.step()
     sig_opt.step()
