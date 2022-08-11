@@ -1,5 +1,6 @@
 # Reinforcement-learning-project-for-self-learning
 
+the image below is the import block diagram that shows the import scheme for the different python files
 ![Import_image](/imgs/import_block_diagram.png)
 
 Credits 
