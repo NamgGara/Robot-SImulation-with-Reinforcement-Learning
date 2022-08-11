@@ -23,7 +23,6 @@ VPG_sigma = VPG(hyperparameters.feature_length, hyperparameters.action_space)
 
 for i,j in zip(["mean_model.pt","st_dev_model.pt"],[VPG_mu, VPG_sigma]):
     if os.path.exists(i):
-        print("loaded")
         j.load_state_dict(torch.load(i))
 
 mu_optimizer, sigma_optimizer = [torch.optim.Adam(x.parameters(),lr=y) for x,y in
