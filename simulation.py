@@ -38,7 +38,7 @@ input_tensor = get_states_and_contact()
 batch = torch.tensor([])
 rt.reward.set_threshold(head_Z_coord())
 print(head_Z_coord())
-
+c_reward = 0
 for a in range(hyperparameters.epoch):
     for i in range(hyperparameters.simualtion_step):
 
@@ -48,7 +48,7 @@ for a in range(hyperparameters.epoch):
 
         p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
-        c_reward = rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
+        c_reward += rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
         batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist)), 0)
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
