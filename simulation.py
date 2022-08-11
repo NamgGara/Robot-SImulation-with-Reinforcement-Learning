@@ -64,7 +64,6 @@ for a in range(hyperparameters.epoch):
     PPO_model.save_model()
     rt.reward.reset()
 
-    
 p.disconnect()
 
 
