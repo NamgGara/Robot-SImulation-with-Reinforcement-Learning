@@ -1,9 +1,4 @@
 
-def overlapping_punishment(list):
-    if not list:
-        return -1
-    return 0
-
 class Reward_for_standing():
     def __init__(self) -> None:
         
@@ -19,7 +14,15 @@ class Reward_for_standing():
     def reset(self):
         self.threshold = 0
 
-    def __call__(self,progress):
+    def overlapping_punishment(self,list):
+        if not list:
+            return -1
+        return 0
+# put in switch logic for contact that is for overlapping
+    def __call__(self,progress, contact, idx):
+        if idx%2==0:
+            return self.overlapping_punishment(contact)
+        
         if progress > self.threshold:
             self.threshold = progress
             return self.reward

@@ -4,7 +4,7 @@ from time import sleep
 import hyperparameters
 import PPO_model
 import torch
-import reward_tuning as rt
+from reward_tuning import reward as rt
 
 # pybullet boilerplate
 physics_client = p.connect(p.GUI)
@@ -36,7 +36,7 @@ def reset_robot(robot):
 input_tensor = get_states_and_contact()
 
 batch = torch.tensor([])
-rt.reward.set_threshold(head_Z_coord())
+rt.set_threshold(head_Z_coord())
 print(head_Z_coord())
 c_reward = 0
 for a in range(hyperparameters.epoch):
@@ -48,7 +48,7 @@ for a in range(hyperparameters.epoch):
 
         p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
-        c_reward += rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
+        c_reward += rt(head_Z_coord(), p.getContactPoints(robot,robot), i)
         batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist)), 0)
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
@@ -57,12 +57,12 @@ for a in range(hyperparameters.epoch):
             print(f"epoch=> {a}, and loop {i}")
             
     print(f"rewards are {batch.mean()}")
-    print(f"progress was {rt.reward.threshold}")
+    print(f"progress was {rt.threshold}")
     PPO_model.training(batch, c_reward)
     batch = torch.tensor([])
     robot, c_reward = reset_robot(robot)
     PPO_model.save_model()
-    rt.reward.reset()
+    rt.reset()
 
 p.disconnect()
 
