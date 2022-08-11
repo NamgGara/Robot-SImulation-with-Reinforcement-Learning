@@ -48,8 +48,8 @@ for a in range(hyperparameters.epoch):
 
         p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
-        reward = rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
-        batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,reward)), 0)
+        c_reward = rt.reward(head_Z_coord()) + rt.overlapping_punishment(p.getContactPoints(robot,robot))
+        batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist,c_reward)), 0)
         input_tensor = get_states_and_contact()
         sleep(hyperparameters.simulation_speed)
 
