@@ -11,7 +11,7 @@ class Reward_for_standing():
         self.reward = 5
         self.standing_reward = 1
         self.punishment = -1
-        self.gap = 10
+        self.gap = 2
     
     def set_threshold(self, value):
         self.threshold = value
