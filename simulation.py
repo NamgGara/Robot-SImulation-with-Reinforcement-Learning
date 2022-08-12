@@ -7,7 +7,7 @@ import torch
 from reward_tuning import reward as rt
 
 # pybullet boilerplate
-physics_client = p.connect(p.DIRECT)
+physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(*hyperparameters.gravity)
 
