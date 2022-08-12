@@ -36,33 +36,40 @@ def reset_robot(robot):
 input_tensor = get_states_and_contact()
 
 batch = torch.tensor([])
+
 rt.set_threshold(head_Z_coord())
-print(head_Z_coord())
 c_reward = 0
+tau = torch.tensor([0.])
 for a in range(hyperparameters.epoch):
-    for i in range(hyperparameters.simualtion_step):
+    for b in range(hyperparameters.batch):
+        for i in range(hyperparameters.simualtion_step):
 
-        p.stepSimulation()
+            p.stepSimulation()
 
-        dist, action = PPO_model.get_dist_and_action(input_tensor)
+            dist, action = PPO_model.get_dist_and_action(input_tensor)
 
-        p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
+            p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
-        c_reward += rt(head_Z_coord(), p.getContactPoints(robot,robot), i)
-        batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist)), 0)
-        input_tensor = get_states_and_contact()
-        sleep(hyperparameters.simulation_speed)
+            c_reward += rt(head_Z_coord(), p.getContactPoints(robot,robot), i)
 
-        if i%10==0:
-            print(f"epoch=> {a}, and loop {i}")
-            
-    print(f"rewards are {batch.mean()}")
+            batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist)), 0)
+
+            input_tensor = get_states_and_contact()
+            sleep(hyperparameters.simulation_speed)
+
+            if i%10==0:
+                print(f"epoch=> {a}, and loop {i}")
+        # change epoch back to 1000 
+        tau += tau + (1/10) * (batch.sum() - tau)
+        print(tau)
+        batch = torch.tensor([])
+        robot, c_reward = reset_robot(robot)
+        rt.reset()
+
     print(f"progress was {rt.threshold}")
-    PPO_model.training(batch, c_reward)
-    batch = torch.tensor([])
-    robot, c_reward = reset_robot(robot)
+    PPO_model.training(tau, c_reward)
+    tau = torch.tensor([0.])
     PPO_model.save_model()
-    rt.reset()
 
 p.disconnect()
 

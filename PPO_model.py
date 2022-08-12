@@ -46,13 +46,13 @@ def log_prob_and_tau(action, dist):
     return -1 * dist.log_prob(action)
       #this is like returning an expectation of the tragetory and reward of tregetory
 
-def training(batch,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
+def training(batch_of_tregactory,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     
     mu_opt.zero_grad()
     sig_opt.zero_grad()
-    result = batch.mean() * reward
+    result = batch_of_tregactory * reward
     result.backward()
-
+    print("there is gradient _______", VPG_mu.layer_1.weight)
     mu_opt.step()
     sig_opt.step()
 
