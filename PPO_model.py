@@ -48,7 +48,7 @@ def log_prob_and_tau(action, dist):
 
 def summation_of_gradient_log(batch, batch_log):
     summation_batch = batch.sum()
-    return torch.cat(batch_log,summation_batch, 0)
+    return torch.cat((batch_log,summation_batch), dim=0)
 
 def training(batch,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     
