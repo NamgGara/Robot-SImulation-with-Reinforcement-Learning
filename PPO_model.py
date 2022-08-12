@@ -48,8 +48,8 @@ def training(batch_of_tregactory,reward, mu_opt = mu_optimizer, sig_opt = sigma_
     sig_opt.zero_grad()
     result = batch_of_tregactory * reward
     result.backward()
-    print(f"{batch_of_tregactory.grad}")
-    # print(f"gradient is ", VPG_mu.layer_3.weight.grad[0])
+    print(f"{batch_of_tregactory.grad=}")
+    print(f"gradient is ", VPG_mu.layer_3.weight.grad[0])
     mu_opt.step()
     sig_opt.step()
 

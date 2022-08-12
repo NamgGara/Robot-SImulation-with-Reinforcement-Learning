@@ -39,6 +39,7 @@ batch = torch.tensor([],requires_grad=True)
 
 rt.set_threshold(head_Z_coord())
 c_reward = 0
+tau_reward = []
 tau = torch.tensor([])
 for a in range(hyperparameters.epoch):
     for b in range(hyperparameters.batch):
@@ -60,13 +61,15 @@ for a in range(hyperparameters.epoch):
             if i%100==0:
                 print(f"epoch=> {a}, and loop {i}")
         # change epoch back to 1000 
+        tau_reward.append(c_reward)
         tau = torch.cat((tau,batch.sum().unsqueeze(0)),0)
         batch = torch.tensor([], requires_grad=True)
         robot, c_reward = reset_robot(robot)
         rt.reset()
     
-    PPO_model.training(tau.mean(), c_reward)
+    PPO_model.training(tau.mean(), sum(tau_reward)/len(tau_reward))
     tau = torch.tensor([], requires_grad=True)
+    tau_reward = []
     PPO_model.save_model()
 
 p.disconnect()
