@@ -46,6 +46,10 @@ def log_prob_and_tau(action, dist):
     return -1 * dist.log_prob(action)
       #this is like returning an expectation of the tragetory and reward of tregetory
 
+def summation_of_gradient_log(batch, batch_log):
+    summation_batch = batch.sum()
+    return torch.cat(batch_log,summation_batch, 0)
+
 def training(batch,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     
     mu_opt.zero_grad()

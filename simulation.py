@@ -39,6 +39,7 @@ batch = torch.tensor([])
 rt.set_threshold(head_Z_coord())
 print(head_Z_coord())
 c_reward = 0
+batch_log = torch.tensor([])
 for a in range(hyperparameters.epoch):
     for i in range(hyperparameters.simualtion_step):
 
@@ -51,6 +52,7 @@ for a in range(hyperparameters.epoch):
         c_reward += rt(head_Z_coord(), p.getContactPoints(robot,robot), i)
         batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist)), 0)
         input_tensor = get_states_and_contact()
+        batch_log = PPO_model.summation_of_gradient_log(batch, batch_log)
         sleep(hyperparameters.simulation_speed)
 
         if i%10==0:
@@ -58,8 +60,8 @@ for a in range(hyperparameters.epoch):
             
     print(f"rewards are {batch.mean()}")
     print(f"progress was {rt.threshold}")
-    PPO_model.training(batch, c_reward)
-    batch = torch.tensor([])
+    PPO_model.training(batch_log, c_reward)
+    batch, batch_log = torch.tensor([]), torch.tensor([])
     robot, c_reward = reset_robot(robot)
     PPO_model.save_model()
     rt.reset()
