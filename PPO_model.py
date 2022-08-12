@@ -25,8 +25,8 @@ for i,j in zip(["mean_model.pt","st_dev_model.pt"],[VPG_mu, VPG_sigma]):
     if os.path.exists(i):
         j.load_state_dict(torch.load(i))
 
-mu_optimizer, sigma_optimizer = [torch.optim.Adam(x.parameters(),lr=y) for x,y in
-                                zip([VPG_mu,VPG_sigma],[hyperparameters.VPG_mu_learning_rate,hyperparameters.VPG_sigma_learning_rate])]
+mu_optimizer = torch.optim.Adam(VPG_mu.parameters(),lr=hyperparameters.VPG_mu_learning_rate) 
+sigma_optimizer = torch.optim.Adam(VPG_sigma.parameters(),lr=hyperparameters.VPG_sigma_learning_rate)
 
 def save_model():
     torch.save(VPG_mu.state_dict(), "mean_model.pt")
@@ -36,9 +36,6 @@ def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
     mean = mu(input)
     std = torch.exp(sigma(input))
     dist = torch.distributions.Normal(loc=mean, scale=std)
-
-    # print()
-    # print("gradient   ___", VPG_mu.layer_1.weight.grad)
     
     return dist, dist.sample()
 
@@ -46,17 +43,14 @@ def log_prob_and_tau(action, dist):
     return -1 * dist.log_prob(action)
       #this is like returning an expectation of the tragetory and reward of tregetory
 
-def summation_of_gradient_log(batch, batch_log):
-    summation_batch = batch.sum()
-    return torch.cat((summation_batch,batch_log),0)
 
-def training(batch,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
-    
+def training(batch_of_tregactory,reward, mu_opt = mu_optimizer, sig_opt = sigma_optimizer):
     mu_opt.zero_grad()
     sig_opt.zero_grad()
-    result = batch.mean() * reward
+    result = batch_of_tregactory * reward
     result.backward()
-
+    print(f"{batch_of_tregactory.grad=}")
+    print(f"gradient is ", VPG_mu.layer_3.weight.grad[0])
     mu_opt.step()
     sig_opt.step()
 
