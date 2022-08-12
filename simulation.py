@@ -7,7 +7,7 @@ import torch
 from reward_tuning import reward as rt
 
 # pybullet boilerplate
-physics_client = p.connect(p.GUI)
+physics_client = p.connect(p.DIRECT)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(*hyperparameters.gravity)
 
@@ -35,11 +35,11 @@ def reset_robot(robot):
 
 input_tensor = get_states_and_contact()
 
-batch = torch.tensor([])
+batch = torch.tensor([],requires_grad=True)
 
 rt.set_threshold(head_Z_coord())
 c_reward = 0
-tau = torch.tensor([0.])
+tau = torch.tensor([])
 for a in range(hyperparameters.epoch):
     for b in range(hyperparameters.batch):
         for i in range(hyperparameters.simualtion_step):
@@ -57,18 +57,16 @@ for a in range(hyperparameters.epoch):
             input_tensor = get_states_and_contact()
             sleep(hyperparameters.simulation_speed)
 
-            if i%10==0:
+            if i%100==0:
                 print(f"epoch=> {a}, and loop {i}")
         # change epoch back to 1000 
-        tau += tau + (1/10) * (batch.sum() - tau)
-        print(tau)
-        batch = torch.tensor([])
+        tau = torch.cat((tau,batch.sum().unsqueeze(0)),0)
+        batch = torch.tensor([], requires_grad=True)
         robot, c_reward = reset_robot(robot)
         rt.reset()
-
-    print(f"progress was {rt.threshold}")
-    PPO_model.training(tau, c_reward)
-    tau = torch.tensor([0.])
+    
+    PPO_model.training(tau.mean(), c_reward)
+    tau = torch.tensor([], requires_grad=True)
     PPO_model.save_model()
 
 p.disconnect()
