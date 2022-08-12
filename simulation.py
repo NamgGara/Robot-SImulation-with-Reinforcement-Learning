@@ -43,7 +43,7 @@ c_reward = 0
 tau_reward = []
 tau = torch.tensor([])
 for a in range(hyperparameters.epoch):
-    for b in range(hyperparameters.batch):
+    for b in range(hyperparameters.batch_size):
         for i in range(hyperparameters.simualtion_step):
 
             p.stepSimulation()
