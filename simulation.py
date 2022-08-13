@@ -40,7 +40,7 @@ def reset_robot(robot):
 
 def return_rtg(rtg_batch):
     rtg = torch.zeros(size=(len(rtg_batch),))
-    
+
     for j,i in zip(rtg_batch[::-1],range(len(rtg_batch)-1,-1,-1)):
         rtg[i]= j + (rtg[i+1] if i+1<len(rtg_batch) else 0)
     return rtg.unsqueeze(1)
@@ -51,10 +51,9 @@ for a in range(param.epoch):
 
         robot = reset_robot(robot)
         rt.reset()
-        non_rtg_batch, state_value_batch, batch = empty_list_and_tensor()
+        non_rtg_batch, state_value_batch, policy_batch = empty_list_and_tensor()
 
         for i in range(param.simulation_step_number):
-
             p.stepSimulation()
 
             dist, action = PPO_model.get_dist_and_action(input_tensor)
@@ -63,7 +62,7 @@ for a in range(param.epoch):
             p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
             non_rtg_batch.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
-            batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
+            policy_batch = torch.cat((policy_batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
             input_tensor = get_states_and_contact()
             sleep(param.simulation_speed)
 
@@ -72,8 +71,8 @@ for a in range(param.epoch):
 
         rtg = return_rtg(non_rtg_batch) 
         advantage = rtg - state_value_batch
-        rtg_log_prob = advantage * batch[1:].sum(1) 
-
+        rtg_log_prob = advantage * policy_batch[1:].sum(1) 
+ 
         state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
 
