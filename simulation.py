@@ -33,8 +33,7 @@ input_tensor = get_states_and_contact()
 final_state_value = torch.tensor([],requires_grad=True)
 
 def reset_robot(robot):
-    if robot:
-        p.removeBody(robot)
+    p.removeBody(robot)
     return p.loadURDF(param.urdf_model, param.spawn_location,p.getQuaternionFromEuler(param.spawn_pitch),
                    flags= p.URDF_USE_SELF_COLLISION)
 
