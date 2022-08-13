@@ -27,7 +27,7 @@ def empty_list_and_tensor():
     return [], torch.tensor([],requires_grad=True),torch.tensor([],requires_grad=True)
 
 def final_empyt_tensor():
-    return torch.tensor([],requires_grad=True),torch.tensor([],requires_grad=True)
+    return torch.tensor([],requires_grad=True), torch.tensor([],requires_grad=True)
 
 head_Z_coord = lambda: p.getLinkState(robot,2)[0][2]
 rt.set_threshold(head_Z_coord())
@@ -79,7 +79,7 @@ for a in range(param.epoch):
 
         final_policy = torch.cat((final_policy,rtg_log_prob.sum(0).unsqueeze(0)),0)
   
-        state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
+        state_value_loss = torch.nn.MSELoss()(rtg,state_value_batch)
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
     
     PPO_model.training(final_policy.mean(0), final_state_value.mean())
