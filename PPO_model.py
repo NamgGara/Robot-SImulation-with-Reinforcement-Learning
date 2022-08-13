@@ -31,7 +31,7 @@ class A_Critic(nn.Module):
 
 VPG_mu = Policy(param.feature_length, param.action_space)
 VPG_sigma = Policy(param.feature_length, param.action_space)
-Critic = A_Critic(param.feature_length, 1)
+Critic = A_Critic(param.feature_length)
 
 mu_optimizer = torch.optim.Adam(VPG_mu.parameters(),lr=param.VPG_mu_learning_rate) 
 sigma_optimizer = torch.optim.Adam(VPG_sigma.parameters(),lr=param.VPG_sigma_learning_rate)
