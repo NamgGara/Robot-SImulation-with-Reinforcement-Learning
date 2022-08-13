@@ -38,11 +38,14 @@ def reset_robot(robot):
     p.removeBody(robot)
     return p.loadURDF(param.urdf_model, param.spawn_location,p.getQuaternionFromEuler(param.spawn_pitch),
                    flags= p.URDF_USE_SELF_COLLISION)
-
+                   
 def return_rtg(rtg_batch):
     rtg = torch.zeros(size=(len(rtg_batch),))
-    for i in rtg_batch[::-1]:
-        rtg[i]= i + (rtg[i+1] if i+1<len(rtg_batch) else 0)
+    for j,i in zip(rtg_batch[::-1],range(len(rtg_batch)-1,-1,-1)):
+        print("i and j", i,j)
+        rtg[i]= j + (rtg[i+1] if i+1<len(rtg_batch) else 0)
+        print(rtg)
+
     return rtg.unsqueeze(1)
 
 for a in range(param.epoch):
