@@ -13,7 +13,6 @@ p.setGravity(*param.gravity)
 plane = p.loadURDF(param.plane)
 robot = p.loadURDF(param.urdf_model, param.spawn_location,
                    p.getQuaternionFromEuler(param.spawn_pitch),flags= p.URDF_USE_SELF_COLLISION)
-
 num = range(p.getNumJoints(robot))
 joint_array, feature_length = list(num), len(num)
 
@@ -31,25 +30,29 @@ def empty_list_and_tensor():
 head_Z_coord = lambda: p.getLinkState(robot,2)[0][2]
 rt.set_threshold(head_Z_coord())
 input_tensor = get_states_and_contact()
-non_rtg_batch, state_value_batch, batch = empty_list_and_tensor()
 final_state_value = torch.tensor([],requires_grad=True)
 
 def reset_robot(robot):
-    p.removeBody(robot)
+    if robot:
+        p.removeBody(robot)
     return p.loadURDF(param.urdf_model, param.spawn_location,p.getQuaternionFromEuler(param.spawn_pitch),
                    flags= p.URDF_USE_SELF_COLLISION)
-                   
+
 def return_rtg(rtg_batch):
     rtg = torch.zeros(size=(len(rtg_batch),))
+    
     for j,i in zip(rtg_batch[::-1],range(len(rtg_batch)-1,-1,-1)):
-        print("i and j", i,j)
         rtg[i]= j + (rtg[i+1] if i+1<len(rtg_batch) else 0)
-        print(rtg)
-
     return rtg.unsqueeze(1)
 
 for a in range(param.epoch):
+
     for b in range(param.batch_size):
+
+        robot = reset_robot(robot)
+        rt.reset()
+        non_rtg_batch, state_value_batch, batch = empty_list_and_tensor()
+
         for i in range(param.simulation_step_number):
 
             p.stepSimulation()
@@ -57,11 +60,9 @@ for a in range(param.epoch):
             dist, action = PPO_model.get_dist_and_action(input_tensor)
             state_value = PPO_model.Critic(input_tensor)
             state_value_batch = torch.cat((state_value_batch,state_value),0)
-
             p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
             non_rtg_batch.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
-
             batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
             input_tensor = get_states_and_contact()
             sleep(param.simulation_speed)
@@ -76,9 +77,6 @@ for a in range(param.epoch):
         state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
 
-        robot = reset_robot(robot)
-        rt.reset()
-        non_rtg_batch, state_value_batch, batch = empty_list_and_tensor()
 
     PPO_model.training(rtg_log_prob.mean(), final_state_value.mean())
     PPO_model.save_model()
