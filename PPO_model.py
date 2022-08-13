@@ -64,7 +64,7 @@ def training(batch_of_tregactory,state_value, mu_opt = mu_optimizer, sig_opt = s
     critic.zero_grad()
 
     result = batch_of_tregactory + state_value
-    result.backward()
+    result.backward(torch.tensor([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]))
     print(f"gradient of VPG ", VPG_mu.layer_1.weight.grad[0])
     print(f"gradient of critic ", Critic.layer_3.weight.grad[0])
 

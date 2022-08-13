@@ -7,7 +7,7 @@ plane = "plane.urdf"
 
 simulation_step_number = 1000
 epoch = 50
-batch_size = 5
+batch_size = 3
 feature_length = 15 + 15
 action_space = 15
 simulation_speed = 1./400.

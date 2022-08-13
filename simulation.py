@@ -27,6 +27,9 @@ def empty_list_and_tensor():
     return [], torch.tensor([],requires_grad=True),\
            torch.zeros(size=(1,15),requires_grad=True)
 
+def final_empyt_tensor():
+    return torch.tensor([],requires_grad=True),torch.tensor([],requires_grad=True)
+
 head_Z_coord = lambda: p.getLinkState(robot,2)[0][2]
 rt.set_threshold(head_Z_coord())
 input_tensor = get_states_and_contact()
@@ -45,7 +48,8 @@ def return_rtg(rtg_batch):
     return rtg
 
 for a in range(param.epoch):
-    
+    final_state_value, final_policy = final_empyt_tensor()
+
     for b in range(param.batch_size):
 
         robot = reset_robot(robot)
@@ -69,23 +73,18 @@ for a in range(param.epoch):
             
             input_tensor = get_states_and_contact()
             # sleep(param.simulation_speed)
-
         rtg = return_rtg(complete_reward) 
         advantage = rtg - state_value_batch
-        #this is one trejectory, summing all actions along the time step (0), summing by dim 1 means im summing the actions
-        print("shape",advantage.unsqueeze(0).shape, policy_batch[1:].shape)
-        # rtg_log_prob = (advantage.unsqueeze(0) * policy_batch[1:])
-        rtg_log_prob = torch.matmul(advantage.unsqueeze(0), policy_batch[1:])
-        print(rtg_log_prob.shape) 
- 
+        
+        rtg_log_prob = (advantage.unsqueeze(0) * policy_batch[1:].T).T
+        
+        final_policy = torch.cat((final_policy,rtg_log_prob.sum(0).unsqueeze(0)),0)
+  
         state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
-
-
-# here there rtg_log_prob.mean() is wrong since its the mean of a single trejectory, not for the batch= should have a final 
-    PPO_model.training(rtg_log_prob.mean(), final_state_value.mean())
+    
+    PPO_model.training(final_policy.mean(0), final_state_value.mean())
     PPO_model.save_model()
-    final_state_value = torch.tensor([],requires_grad=True)
 p.disconnect()
 
 
