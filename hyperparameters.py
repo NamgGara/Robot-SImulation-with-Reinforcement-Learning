@@ -6,7 +6,7 @@ urdf_model = "humanoid.urdf"
 plane = "plane.urdf"
 
 simulation_step_number = 1000
-epoch = 500
+epoch = 50
 batch_size = 5
 feature_length = 15 + 15
 action_space = 15
