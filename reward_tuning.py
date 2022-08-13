@@ -25,8 +25,8 @@ class Reward_for_standing():
         if progress > self.threshold:
             self.threshold = progress
             return self.reward
-        elif progress < self.threshold and progress > self.threshold - self.gap:
-            return self.standing_reward
+        # elif progress < self.threshold and progress > self.threshold - self.gap:
+        #     return self.standing_reward
         return self.punishment
 
 reward = Reward_for_standing()

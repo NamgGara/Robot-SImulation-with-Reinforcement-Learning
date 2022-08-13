@@ -71,7 +71,7 @@ for a in range(param.epoch):
         rtg_log_prob = advantage * batch[1:].sum(1) 
 
         state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
-        final_state_value = torch.cat((final_state_value, state_value_loss),0)
+        final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
 
         robot = reset_robot(robot)
         rt.reset()
