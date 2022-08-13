@@ -42,45 +42,50 @@ def return_rtg(rtg_batch):
 
     for j,i in zip(rtg_batch[::-1],range(len(rtg_batch)-1,-1,-1)):
         rtg[i]= j + (rtg[i+1] if i+1<len(rtg_batch) else 0)
-    return rtg.unsqueeze(1)
+    return rtg
 
 for a in range(param.epoch):
-
+    
     for b in range(param.batch_size):
 
         robot = reset_robot(robot)
         rt.reset()
-        non_rtg_batch, state_value_batch, policy_batch = empty_list_and_tensor()
+        complete_reward, state_value_batch, policy_batch = empty_list_and_tensor()
 
         for i in range(param.simulation_step_number):
-            p.stepSimulation()
-
-            dist, action = PPO_model.get_dist_and_action(input_tensor)
-            state_value = PPO_model.Critic(input_tensor)
-            state_value_batch = torch.cat((state_value_batch,state_value),0)
-            p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
-
-            non_rtg_batch.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
-            policy_batch = torch.cat((policy_batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
-            input_tensor = get_states_and_contact()
-            sleep(param.simulation_speed)
-
+            
             if i%100==0:
                 print(f"epoch=> {a}, and loop {i}")
 
-        rtg = return_rtg(non_rtg_batch) 
+            p.stepSimulation()
+        
+            dist, action = PPO_model.get_dist_and_action(input_tensor)
+            p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
+            policy_batch = torch.cat((policy_batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
+
+            state_value = PPO_model.Critic(input_tensor)
+            state_value_batch = torch.cat((state_value_batch,state_value),0)
+            complete_reward.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
+            
+            input_tensor = get_states_and_contact()
+            # sleep(param.simulation_speed)
+
+        rtg = return_rtg(complete_reward) 
         advantage = rtg - state_value_batch
-        rtg_log_prob = advantage * policy_batch[1:].sum(1) 
+        #this is one trejectory, summing all actions along the time step (0), summing by dim 1 means im summing the actions
+        print("shape",advantage.unsqueeze(0).shape, policy_batch[1:].shape)
+        # rtg_log_prob = (advantage.unsqueeze(0) * policy_batch[1:])
+        rtg_log_prob = torch.matmul(advantage.unsqueeze(0), policy_batch[1:])
+        print(rtg_log_prob.shape) 
  
         state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
 
 
+# here there rtg_log_prob.mean() is wrong since its the mean of a single trejectory, not for the batch= should have a final 
     PPO_model.training(rtg_log_prob.mean(), final_state_value.mean())
     PPO_model.save_model()
     final_state_value = torch.tensor([],requires_grad=True)
-
-
 p.disconnect()
 
 
