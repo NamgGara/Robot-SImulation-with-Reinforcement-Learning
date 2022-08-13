@@ -6,7 +6,7 @@ import PPO_model
 import torch
 from reward_tuning import reward as rt
 
-physics_client = p.connect(p.GUI)
+physics_client = p.connect(p.DIRECT)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(*param.gravity)
 
