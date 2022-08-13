@@ -76,10 +76,9 @@ for a in range(param.epoch):
         advantage = rtg - state_value_batch
         
         rtg_log_prob = (advantage.unsqueeze(0) * policy_batch.T).T
+        state_value_loss = torch.nn.MSELoss()(rtg,state_value_batch)
 
         final_policy = torch.cat((final_policy,rtg_log_prob.sum(0).unsqueeze(0)),0)
-  
-        state_value_loss = torch.nn.MSELoss()(rtg,state_value_batch)
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
     
     PPO_model.training(final_policy.mean(0), final_state_value.mean())
