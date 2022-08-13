@@ -24,8 +24,7 @@ def get_states_and_contact(robot_id=robot, plane_id=plane, joint_id=joint_array)
     return torch.tensor(joint_states + joint_contacts)
 
 def empty_list_and_tensor():
-    return [], torch.tensor([],requires_grad=True),\
-           torch.zeros(size=(1,15),requires_grad=True)
+    return [], torch.tensor([],requires_grad=True),torch.tensor([],requires_grad=True)
 
 def final_empyt_tensor():
     return torch.tensor([],requires_grad=True),torch.tensor([],requires_grad=True)
@@ -76,8 +75,8 @@ for a in range(param.epoch):
         rtg = return_rtg(complete_reward) 
         advantage = rtg - state_value_batch
         
-        rtg_log_prob = (advantage.unsqueeze(0) * policy_batch[1:].T).T
-        
+        rtg_log_prob = (advantage.unsqueeze(0) * policy_batch.T).T
+
         final_policy = torch.cat((final_policy,rtg_log_prob.sum(0).unsqueeze(0)),0)
   
         state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
