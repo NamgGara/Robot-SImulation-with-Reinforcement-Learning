@@ -1,4 +1,3 @@
-
 class Reward_for_standing():
     def __init__(self) -> None:
         

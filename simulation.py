@@ -12,7 +12,7 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(*hyperparameters.gravity)
 
 plane = p.loadURDF(hyperparameters.plane)
-robot = p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point,
+robot = p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_location,
                    p.getQuaternionFromEuler(hyperparameters.spawn_pitch),
                    flags= p.URDF_USE_SELF_COLLISION)
 joint_array, feature_length = list(range(p.getNumJoints(robot))),  len(range(p.getNumJoints(robot)))
@@ -29,48 +29,66 @@ def head_Z_coord():
 
 def reset_robot(robot):
     p.removeBody(robot)
-    return p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_point,
+    return p.loadURDF(hyperparameters.urdf_model, hyperparameters.spawn_location,
                    p.getQuaternionFromEuler(hyperparameters.spawn_pitch),
                    flags= p.URDF_USE_SELF_COLLISION) , 0
 
 input_tensor = get_states_and_contact()
-
-batch = torch.tensor([],requires_grad=True)
-
+batch2=torch.zeros(size=(1,15))
 rt.set_threshold(head_Z_coord())
-c_reward = 0
 
-tau_reward = []
-tau = torch.tensor([])
+C_reward_rtg = []
+final_batch_summation = torch.tensor([],requires_grad=True)
+state_value_batch = torch.tensor([],requires_grad=True)
+
+def return_rtg_log_prob(C_reward_rtg):
+    rtg = torch.zeros(size=(len(C_reward_rtg),))
+    for i in C_reward_rtg[::-1]:
+        rtg[i]= i + (rtg[i+1] if i+1<len(C_reward_rtg) else 0)
+
+    return rtg.unsqueeze(1)
+
 for a in range(hyperparameters.epoch):
     for b in range(hyperparameters.batch_size):
-        for i in range(hyperparameters.simualtion_step):
+        for num, i in enumerate(range(hyperparameters.simulation_step_number)):
 
             p.stepSimulation()
 
             dist, action = PPO_model.get_dist_and_action(input_tensor)
 
+            #trying critic
+            state_value = PPO_model.Critic(input_tensor)
+            state_value_batch = torch.cat((state_value_batch,state_value),0)
+
             p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
 
-            c_reward += rt(head_Z_coord(), p.getContactPoints(robot,robot), i)
+            #rtg
+            C_reward_rtg.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
 
-            batch = torch.cat((batch, PPO_model.log_prob_and_tau(action,dist)), 0)
-
+            batch2 = torch.cat((batch2, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
             input_tensor = get_states_and_contact()
             sleep(hyperparameters.simulation_speed)
 
             if i%100==0:
                 print(f"epoch=> {a}, and loop {i}")
-        # change epoch back to 1000 
-        tau_reward.append(c_reward)
-        tau = torch.cat((tau,batch.sum().unsqueeze(0)),0)
-        batch = torch.tensor([], requires_grad=True)
+
+        #rtg attempt
+
+        rtg = return_rtg_log_prob(C_reward_rtg) 
+        advantage = rtg - state_value_batch
+        rtg_log_prob = batch2[1:].sum(1) * advantage
+
+        state_value_loss = torch.nn.MSELoss()(rtg.sum(),state_value_batch.sum())
         robot, c_reward = reset_robot(robot)
+        batch2=torch.zeros(size=(1,15),requires_grad=True)
+
+        C_reward_rtg = []
+        state_value_batch = torch.tensor([],requires_grad=True)
+
         rt.reset()
     
-    PPO_model.training(tau.mean(), sum(tau_reward)/len(tau_reward))
-    tau = torch.tensor([], requires_grad=True)
-    tau_reward = []
+    PPO_model.training2(rtg_log_prob.mean(), state_value_loss)
+
     PPO_model.save_model()
 
 p.disconnect()
