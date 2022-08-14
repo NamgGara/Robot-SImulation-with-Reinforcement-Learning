@@ -20,7 +20,7 @@ class Policy(nn.Module):
 class A_Critic(nn.Module):
     def __init__(self, state_space):
         super().__init__()
-        self.layer_1 = nn.Linear(in_features= state_space, out_features= (state_space - 3))
+        self.layer_1 = nn.Linear(in_features= state_space + 1, out_features= (state_space - 3))
         self.layer_2 = nn.Linear(in_features= (state_space - 3), out_features= (state_space - 10))
         self.layer_3 = nn.Linear(in_features= (state_space - 10), out_features= 1)
 
@@ -40,9 +40,10 @@ critic_optimizer = torch.optim.Adam(Critic.parameters(),lr=param.Critic_lr)
 list_of_file = ["mean_model.pt", "st_dev_model.pt", "critic.pt"]
 list_of_load_files = [VPG_mu, VPG_sigma, Critic]
 
-for i,j in zip(list_of_file,list_of_load_files):
-    if os.path.exists(i):
-        j.load_state_dict(torch.load(i))
+# for i,j in zip(list_of_file,list_of_load_files):
+#     if os.path.exists(i):
+#         print("loaded")
+#         j.load_state_dict(torch.load(i))
 
 def save_model():
     torch.save(VPG_mu.state_dict(), "mean_model.pt")

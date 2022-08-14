@@ -33,7 +33,6 @@ head_Z_coord = lambda: p.getLinkState(robot,2)[0][2]
 rt.set_threshold(head_Z_coord())
 input_tensor = get_states_and_contact()
 final_state_value = torch.tensor([],requires_grad=True)
-
 def reset_robot(robot):
     p.removeBody(robot)
     return p.loadURDF(param.urdf_model, param.spawn_location,p.getQuaternionFromEuler(param.spawn_pitch),
@@ -45,6 +44,9 @@ def return_rtg(rtg_batch):
     for j,i in zip(rtg_batch[::-1],range(len(rtg_batch)-1,-1,-1)):
         rtg[i]= j + (rtg[i+1] if i+1<len(rtg_batch) else 0)
     return rtg
+
+def cat_input_and_time_step(input, time_step):
+    return torch.cat((input, torch.tensor([time_step])),0)
 
 for a in range(param.epoch):
     final_state_value, final_policy = final_empyt_tensor()
@@ -66,7 +68,7 @@ for a in range(param.epoch):
             p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
             policy_batch = torch.cat((policy_batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
 
-            state_value = PPO_model.Critic(input_tensor)
+            state_value = PPO_model.Critic(cat_input_and_time_step(input_tensor,i))
             state_value_batch = torch.cat((state_value_batch,state_value),0)
             complete_reward.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
             
