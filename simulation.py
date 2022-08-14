@@ -1,6 +1,6 @@
 import pybullet as p
 import pybullet_data
-from time import sleep
+from time import sleep, time
 import hyperparameters as param
 import PPO_model
 import torch
@@ -63,12 +63,12 @@ for a in range(param.epoch):
                 print(f"epoch=> {a}, and loop {i}")
 
             p.stepSimulation()
-        
+    
             dist, action = PPO_model.get_dist_and_action(input_tensor)
             p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
             policy_batch = torch.cat((policy_batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
-
-            state_value = PPO_model.Critic(cat_input_and_time_step(input_tensor,i))
+            
+            state_value = PPO_model.Critic(cat_input_and_time_step(input_tensor, i))
             state_value_batch = torch.cat((state_value_batch,state_value),0)
             complete_reward.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
             
