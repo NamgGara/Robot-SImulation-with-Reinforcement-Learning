@@ -14,7 +14,19 @@ plane = p.loadURDF(param.plane)
 robot = p.loadURDF(param.urdf_model, param.spawn_location,
                    p.getQuaternionFromEuler(param.spawn_pitch),flags= p.URDF_USE_SELF_COLLISION)
 num = range(p.getNumJoints(robot))
-joint_array, feature_length = list(num), len(num)
+
+feature_length = len(num)
+
+
+
+revolute = [4,7,10,13]
+spherical = [1,2,3,6,9,11,12,14]
+# result = {b'root': 4, b'chest': 2, b'neck': 2, b'right_shoulder': 2, b'right_elbow': 0, b'right_wrist': 4, b'left_shoulder': 2, b'left_elbow': 0, b'left_wrist': 4, b'right_hip': 2, b'right_knee': 0, b'right_ankle': 2, b'left_hip': 2, b'left_knee': 0, b'left_ankle': 2}
+# index = {0: b'root', 1: b'chest', 2: b'neck', 3: b'right_shoulder', 4: b'right_elbow', 5: b'right_wrist', 6: b'left_shoulder', 7: b'left_elbow', 8: b'left_wrist', 9: b'right_hip', 10: b'right_knee', 11: b'right_ankle', 12: b'left_hip', 13: b'left_knee', 14: b'left_ankle'}
+
+# fixed = {b'root': 4, b'right_wrist': 4, b'left_wrist': 4}
+# revolute = {b'right_elbow': 0, b'left_elbow': 0, b'right_knee': 0, b'left_knee': 0}
+# spherical = {b'chest': 2, b'neck': 2, b'right_shoulder': 2, b'left_shoulder': 2, b'right_hip': 2, b'right_ankle': 2, b'left_hip': 2, b'left_ankle': 2}
 
 def get_states_and_contact(robot_id=robot, plane_id=plane, joint_id=joint_array):
     raw_states = p.getJointStates(robot_id, jointIndices = joint_id)
