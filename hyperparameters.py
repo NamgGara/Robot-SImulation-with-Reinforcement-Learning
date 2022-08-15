@@ -12,8 +12,8 @@ feature_length = 15 + 15
 action_space = 15
 simulation_speed = 1./400.
 
-VPG_mu_learning_rate = 0.00001
-VPG_sigma_learning_rate = 0.00001
-Critic_lr = 0.00001
+VPG_mu_learning_rate = 0.01
+VPG_sigma_learning_rate = 0.01
+Critic_lr = 0.01
 speed_factor = 10
 action_factor = 10
