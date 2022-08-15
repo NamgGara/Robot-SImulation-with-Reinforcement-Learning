@@ -16,8 +16,9 @@ robot = p.loadURDF(param.urdf_model, param.spawn_location,
 num = range(p.getNumJoints(robot))
 
 feature_length = len(num)
-
-
+joint_array = list(num)
+#might remove this after code works
+joint_array = list(num)
 
 revolute = [4,7,10,13]
 spherical = [1,2,3,6,9,11,12,14]
