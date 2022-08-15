@@ -87,7 +87,6 @@ for a in range(param.epoch):
         
         rtg_log_prob = (advantage.unsqueeze(0) * policy_batch.T).T
         final_policy = torch.cat((final_policy,rtg_log_prob.sum(0).unsqueeze(0)),0)
-        print(final_policy.shape)
         state_value_loss = torch.nn.MSELoss()(rtg,state_value_batch)
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
     
