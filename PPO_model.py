@@ -65,7 +65,7 @@ def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma, velocity = Velocity):
     std = torch.exp(sigma(input))
     dist = torch.distributions.normal.Normal(loc=mean, scale=std)
     action = dist.sample()
-    return dist, action, speed * param.speed_factor
+    return dist, action*10, speed * param.speed_factor
 
 input = torch.tensor([10. for i in range(30)])
 x = get_dist_and_action(input)
