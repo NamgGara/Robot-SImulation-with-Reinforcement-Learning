@@ -6,16 +6,24 @@ import hyperparameters as param
 import os
 
 class Policy(nn.Module):
-    def __init__(self, state_space, action_space):
+    def __init__(self, state_space):
         super().__init__()
         self.layer_1 = nn.Linear(in_features= state_space, out_features= (state_space + 3))
         self.layer_2 = nn.Linear(in_features= (state_space + 3), out_features= (state_space + 4))
-        self.layer_3 = nn.Linear(in_features= (state_space + 4), out_features= action_space)
+        self.layer_3 = nn.Linear(in_features=(state_space +4), out_features=36)
+        self.action = nn.Linear(in_features=36, out_features=36)
 
+        # for i in range(0,9):
+        #     self.__setattr__(f"action_{i+1}",value=nn.Linear(in_features=state_space+4,out_features=4))
+        #     print(i)
+        #     print(self.__getattr__(f"action_{i+1}"))
     def forward(self,input):
         input = F.relu(self.layer_1(input))
         input = F.relu(self.layer_2(input))
-        return self.layer_3(input)
+        # return torch.tensor([self.__getattr__(f"action_{i}")(input) for i in range(9)])
+        # return torch.tensor([self.__getattr__(f"action_{i+1}")(input) for i in range(0,9)])
+        input = F.relu(self.layer_3(input))
+        return self.action(input)
 
 class A_Critic(nn.Module):
     def __init__(self, state_space):
@@ -29,9 +37,10 @@ class A_Critic(nn.Module):
         input = F.relu(self.layer_2(input))
         return self.layer_3(input)
 
-VPG_mu = Policy(param.feature_length, param.action_space)
-VPG_sigma = Policy(param.feature_length, param.action_space)
+VPG_mu = Policy(param.feature_length)
+VPG_sigma = Policy(param.feature_length)
 Critic = A_Critic(param.feature_length)
+Velocity = Policy(param.feature_length)
 
 mu_optimizer = torch.optim.Adam(VPG_mu.parameters(),lr=param.VPG_mu_learning_rate) 
 sigma_optimizer = torch.optim.Adam(VPG_sigma.parameters(),lr=param.VPG_sigma_learning_rate)
@@ -50,11 +59,17 @@ def save_model():
     torch.save(VPG_sigma.state_dict(), "st_dev_model.pt")
     torch.save(Critic.state_dict(), "critic.pt")
 
-def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma):
+def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma, velocity = Velocity):
     mean = mu(input)
+    speed = velocity(input)
     std = torch.exp(sigma(input))
-    dist = torch.distributions.Normal(loc=mean, scale=std)
-    return dist, dist.sample()
+    dist = torch.distributions.normal.Normal(loc=mean, scale=std)
+    action = dist.sample()
+    return dist, action, speed * param.speed_factor
+
+input = torch.tensor([10. for i in range(30)])
+x = get_dist_and_action(input)
+print(x)
 
 def log_prob_and_tau(action, dist):
     return -1 * dist.log_prob(action)
@@ -65,7 +80,7 @@ def training(batch_of_tregactory,state_value, mu_opt = mu_optimizer, sig_opt = s
     critic.zero_grad()
 
     result = batch_of_tregactory + state_value
-    result.backward(torch.tensor([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]))
+    result.backward(torch.tensor([1 for _ in range(0,36)]))
     print(f"gradient of VPG ", VPG_mu.layer_3.weight.grad[0])
     print(f"gradient of critic ", Critic.layer_3.weight.grad[0])
 

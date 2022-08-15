@@ -1,6 +1,6 @@
 import pybullet as p
 import pybullet_data
-from time import sleep, time
+from time import sleep
 import hyperparameters as param
 import PPO_model
 import torch
@@ -15,19 +15,10 @@ robot = p.loadURDF(param.urdf_model, param.spawn_location,
                    p.getQuaternionFromEuler(param.spawn_pitch),flags= p.URDF_USE_SELF_COLLISION)
 num = range(p.getNumJoints(robot))
 
-feature_length = len(num)
-joint_array = list(num)
-#might remove this after code works
-joint_array = list(num)
+joint_array,feature_length = list(num),len(num)
 
 revolute = [4,7,10,13]
 spherical = [1,2,3,6,9,11,12,14]
-# result = {b'root': 4, b'chest': 2, b'neck': 2, b'right_shoulder': 2, b'right_elbow': 0, b'right_wrist': 4, b'left_shoulder': 2, b'left_elbow': 0, b'left_wrist': 4, b'right_hip': 2, b'right_knee': 0, b'right_ankle': 2, b'left_hip': 2, b'left_knee': 0, b'left_ankle': 2}
-# index = {0: b'root', 1: b'chest', 2: b'neck', 3: b'right_shoulder', 4: b'right_elbow', 5: b'right_wrist', 6: b'left_shoulder', 7: b'left_elbow', 8: b'left_wrist', 9: b'right_hip', 10: b'right_knee', 11: b'right_ankle', 12: b'left_hip', 13: b'left_knee', 14: b'left_ankle'}
-
-# fixed = {b'root': 4, b'right_wrist': 4, b'left_wrist': 4}
-# revolute = {b'right_elbow': 0, b'left_elbow': 0, b'right_knee': 0, b'left_knee': 0}
-# spherical = {b'chest': 2, b'neck': 2, b'right_shoulder': 2, b'left_shoulder': 2, b'right_hip': 2, b'right_ankle': 2, b'left_hip': 2, b'left_ankle': 2}
 
 def get_states_and_contact(robot_id=robot, plane_id=plane, joint_id=joint_array):
     raw_states = p.getJointStates(robot_id, jointIndices = joint_id)
@@ -46,6 +37,7 @@ head_Z_coord = lambda: p.getLinkState(robot,2)[0][2]
 rt.set_threshold(head_Z_coord())
 input_tensor = get_states_and_contact()
 final_state_value = torch.tensor([],requires_grad=True)
+
 def reset_robot(robot):
     p.removeBody(robot)
     return p.loadURDF(param.urdf_model, param.spawn_location,p.getQuaternionFromEuler(param.spawn_pitch),
@@ -76,9 +68,12 @@ for a in range(param.epoch):
                 print(f"epoch=> {a}, and loop {i}")
 
             p.stepSimulation()
-    
-            dist, action = PPO_model.get_dist_and_action(input_tensor)
-            p.setJointMotorControlArray(robot,joint_array,p.POSITION_CONTROL, action)
+            
+            dist, action, joint_speed = PPO_model.get_dist_and_action(input_tensor)
+
+            p.setJointMotorControlArray(robot, revolute,p.POSITION_CONTROL, joint_speed[0:4],)
+            p.setJointMotorControlMultiDofArray(robot, spherical, p.POSITION_CONTROL, action[4:36].reshape(shape=(8,4)),  joint_speed[4:])
+
             policy_batch = torch.cat((policy_batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
             
             state_value = PPO_model.Critic(cat_input_and_time_step(input_tensor, i))
@@ -91,9 +86,9 @@ for a in range(param.epoch):
         advantage = rtg - state_value_batch
         
         rtg_log_prob = (advantage.unsqueeze(0) * policy_batch.T).T
-        state_value_loss = torch.nn.MSELoss()(rtg,state_value_batch)
-
         final_policy = torch.cat((final_policy,rtg_log_prob.sum(0).unsqueeze(0)),0)
+        print(final_policy.shape)
+        state_value_loss = torch.nn.MSELoss()(rtg,state_value_batch)
         final_state_value = torch.cat((final_state_value, state_value_loss.unsqueeze(0)),0)
     
     PPO_model.training(final_policy.mean(0), final_state_value.mean())

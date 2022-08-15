@@ -15,3 +15,4 @@ simulation_speed = 1./400.
 VPG_mu_learning_rate = 0.00001
 VPG_sigma_learning_rate = 0.00001
 Critic_lr = 0.00001
+speed_factor = 10
