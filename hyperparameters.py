@@ -1,6 +1,6 @@
 gravity = [0,0,-190.9]
 spawn_location = [0,0,0]
-spawn_pitch = [0,1,0]
+spawn_pitch = [0,5,0]
 
 urdf_model = "humanoid.urdf"
 plane = "plane.urdf"
