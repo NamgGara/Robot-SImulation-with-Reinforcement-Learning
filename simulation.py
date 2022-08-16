@@ -71,8 +71,8 @@ for a in range(param.epoch):
             
             dist, action, joint_speed = PPO_model.get_dist_and_action(input_tensor)
 
-            p.setJointMotorControlArray(robot, revolute,p.POSITION_CONTROL, joint_speed[0:4],)
-            p.setJointMotorControlMultiDofArray(robot, spherical, p.POSITION_CONTROL, action[4:36].reshape(shape=(8,4)),  joint_speed[4:])
+            p.setJointMotorControlArray(robot, revolute,p.POSITION_CONTROL, action[0:4], joint_speed[0:4])
+            p.setJointMotorControlMultiDofArray(robot, spherical, p.POSITION_CONTROL, action[4:36].reshape(shape=(8,4)),  joint_speed[4:].reshape(shape=(8,4)))
 
             policy_batch = torch.cat((policy_batch, PPO_model.log_prob_and_tau(action,dist).unsqueeze(0)),0)
             
@@ -81,7 +81,8 @@ for a in range(param.epoch):
             complete_reward.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
             
             input_tensor = get_states_and_contact()
-            # sleep(param.simulation_speed)
+            sleep(param.simulation_speed)
+            
         rtg = return_rtg(complete_reward) 
         advantage = rtg - state_value_batch
         

@@ -49,10 +49,10 @@ critic_optimizer = torch.optim.Adam(Critic.parameters(),lr=param.Critic_lr)
 list_of_file = ["mean_model.pt", "st_dev_model.pt", "critic.pt"]
 list_of_load_files = [VPG_mu, VPG_sigma, Critic]
 
-# for i,j in zip(list_of_file,list_of_load_files):
-#     if os.path.exists(i):
-#         print("loaded")
-#         j.load_state_dict(torch.load(i))
+for i,j in zip(list_of_file,list_of_load_files):
+    if os.path.exists(i):
+        print("loaded")
+        j.load_state_dict(torch.load(i))
 
 def save_model():
     torch.save(VPG_mu.state_dict(), "mean_model.pt")
@@ -62,14 +62,10 @@ def save_model():
 def get_dist_and_action(input, mu=VPG_mu, sigma=VPG_sigma, velocity = Velocity):
     mean = mu(input)
     speed = velocity(input)
-    std = torch.exp(sigma(input))
+    std = torch.exp(sigma(input)) 
     dist = torch.distributions.normal.Normal(loc=mean, scale=std)
     action = dist.sample()
-    return dist, action*10, speed * param.speed_factor
-
-input = torch.tensor([10. for i in range(30)])
-x = get_dist_and_action(input)
-print(x)
+    return dist, action, speed 
 
 def log_prob_and_tau(action, dist):
     return -1 * dist.log_prob(action)
