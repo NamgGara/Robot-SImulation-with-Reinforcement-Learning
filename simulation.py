@@ -5,6 +5,7 @@ import hyperparameters as param
 import PPO_model
 import torch
 from reward_tuning import reward as rt
+from graph import graph
 
 physics_client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -85,6 +86,7 @@ for a in range(param.epoch):
             
         rtg = return_rtg(complete_reward) 
         advantage = rtg - state_value_batch
+        graph(rtg[0])
         
         rtg_log_prob = (advantage.unsqueeze(0) * policy_batch.T).T
         final_policy = torch.cat((final_policy,rtg_log_prob.sum(0).unsqueeze(0)),0)
@@ -93,6 +95,7 @@ for a in range(param.epoch):
     
     PPO_model.training(final_policy.mean(0), final_state_value.mean())
     PPO_model.save_model()
+    graph.graph()
 p.disconnect()
 
 

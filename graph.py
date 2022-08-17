@@ -24,6 +24,3 @@ class process_plot:
 
 graph = process_plot()
 
-graph(10)
-graph(11)
-graph.graph()
