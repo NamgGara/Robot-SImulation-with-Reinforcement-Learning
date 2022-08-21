@@ -34,7 +34,9 @@ def empty_list_and_tensor():
 def final_empyt_tensor():
     return torch.tensor([],requires_grad=True), torch.tensor([],requires_grad=True)
 
-head_Z_coord = lambda: p.getLinkState(robot,2)[0][2]
+# head_Z_coord = lambda: p.getLinkState(robot,2)[0][2]
+head_Z_coord = lambda: -p.getLinkState(robot,2)[0][1]
+
 rt.set_threshold(head_Z_coord())
 input_tensor = get_states_and_contact()
 final_state_value = torch.tensor([],requires_grad=True)
@@ -82,7 +84,7 @@ for a in range(param.epoch):
             complete_reward.append(rt(head_Z_coord(), p.getContactPoints(robot,robot), i))
             
             input_tensor = get_states_and_contact()
-            sleep(param.simulation_speed)
+            # sleep(param.simulation_speed)
             
         rtg = return_rtg(complete_reward) 
         advantage = rtg - state_value_batch

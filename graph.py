@@ -9,7 +9,7 @@ class process_plot:
 
     def __init__(self) -> None:
         self.value = [0]
-        self.index = 0
+        self.index = 1
 
     def __call__(self,value):
         self.value.append(value)
@@ -19,7 +19,7 @@ class process_plot:
 
         ax.plot(range(self.index),self.value)
         # plt.draw()
-        plt.savefig("test")
+        plt.savefig("results")
         # plt.pause(0.1)
 
 graph = process_plot()
