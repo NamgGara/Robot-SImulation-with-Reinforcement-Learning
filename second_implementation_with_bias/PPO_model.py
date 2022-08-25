@@ -13,15 +13,9 @@ class Policy(nn.Module):
         self.layer_3 = nn.Linear(in_features=(state_space +4), out_features=36)
         self.action = nn.Linear(in_features=36, out_features=36)
 
-        # for i in range(0,9):
-        #     self.__setattr__(f"action_{i+1}",value=nn.Linear(in_features=state_space+4,out_features=4))
-        #     print(i)
-        #     print(self.__getattr__(f"action_{i+1}"))
     def forward(self,input):
         input = F.relu(self.layer_1(input))
         input = F.relu(self.layer_2(input))
-        # return torch.tensor([self.__getattr__(f"action_{i}")(input) for i in range(9)])
-        # return torch.tensor([self.__getattr__(f"action_{i+1}")(input) for i in range(0,9)])
         input = F.relu(self.layer_3(input))
         return self.action(input)
 
