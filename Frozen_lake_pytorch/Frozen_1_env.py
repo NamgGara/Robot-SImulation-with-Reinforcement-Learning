@@ -4,7 +4,6 @@ from torch_Frozen_1_model import Model
 env = gym.make("FrozenLake-v1")
 model = Model(env.observation_space.n, env.action_space.n)
 total = []
-total_count = 0
 episodes = 100
 time_step = 100
 for i in range(episodes):
@@ -19,9 +18,8 @@ for i in range(episodes):
         old_obs = new_obs
         if done:
             total.append(reward)
-            total_count+=reward
             break
 
 model.reward_plot(total)
-print(total_count)
+print(sum(total))
 
